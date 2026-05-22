@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Disclosure Card Report - Credit Risk Scorer</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%230b1f42' width='24' height='24' rx='4'/><path fill='%23fff' d='M6 7h12v2H6zm0 4h12v2H6zm0 4h8v2H6z'/></svg>">
+<style>
+:root{
+  --navy:#0b1f42;
+  --navy-mid:#1a3a6b;
+  --navy-light:#2a52a0;
+  --navy-subtle:#eef3fb;
+  --navy-border:#d5e0f5;
+  --body-bg:#edf1f9;
+  --card-bg:#ffffff;
+  --text-primary:#0f172a;
+  --text-secondary:#475569;
+  --text-muted:#94a3b8;
+  --border:#e2e8f0;
+  --radius:12px;
+  --shadow:0 2px 8px rgba(11,31,66,.09),0 0 0 1px rgba(11,31,66,.04);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6;color:var(--text-primary);background:var(--body-bg)}
+a{color:var(--navy-light);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.header-inner{position:relative;padding:36px 20px 36px;text-align:left}
+header h1{font-size:36px;font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px}
+.header-subtitle{font-size:20px;font-weight:500;opacity:.75;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.header-type-badge{font-size:11px;font-weight:700;padding:3px 11px;border-radius:4px;letter-spacing:.4px;vertical-align:middle;border-left:3px solid transparent}
+.header-meta{display:flex;gap:0;flex-wrap:wrap;margin-top:12px}
+.header-meta-item{font-size:12px;opacity:.65;padding-right:20px;margin-right:20px;border-right:1px solid rgba(255,255,255,.2);line-height:2}
+.header-meta-item:last-child{border-right:none}
+.header-meta-label{opacity:.7;margin-right:4px}
+.header-meta-value{font-weight:600}
+.framework-tag{margin-top:10px;font-size:12px;opacity:.5;letter-spacing:.2px}
+
+/* ── Nav ── */
+.nav-bar{background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(11,31,66,.06)}
+.nav-inner{padding:0 32px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-link{font-size:12px;font-weight:600;color:var(--text-muted);padding:13px 0;flex:1;text-align:center;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-link:hover{color:var(--navy);border-bottom-color:var(--navy-border);text-decoration:none}
+
+/* ── Layout ── */
+.container{padding:28px 32px 48px}
+
+/* ── Cards ── */
+.card-section{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--navy-subtle)}
+.section-icon{width:32px;height:32px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px;flex-shrink:0;line-height:1;font-family:'Consolas','Monaco',monospace}
+.section-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;flex:1}
+.section-count{font-size:11px;font-weight:700;color:var(--navy-light);background:var(--navy-border);padding:2px 9px;border-radius:20px}
+.section-body{padding:22px 24px}
+
+/* ── Info rows ── */
+.info-grid{display:flex;flex-direction:column}
+.info-row{display:flex;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;width:260px;flex-shrink:0}
+.info-value{font-size:13px;color:var(--text-primary);flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ── Prose blocks ── */
+.prose-block{margin-bottom:18px}
+.prose-block:last-child{margin-bottom:0}
+.prose-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
+.prose-content{font-size:13px;color:var(--text-secondary);line-height:1.75;background:var(--navy-subtle);border-left:3px solid var(--navy-border);border-radius:0 8px 8px 0;padding:12px 16px}
+
+/* ── Tags ── */
+.tag{font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag-teal{background:#e0f2f1;color:#00695c}
+.type-pill{font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;white-space:nowrap;border-left:3px solid transparent}
+.dim-pill{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+
+/* ── Expand icon ── */
+.expand-icon{font-size:9px;color:var(--text-muted);flex-shrink:0;transition:transform .15s;display:inline-block}
+
+/* ── Risks ── */
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk-item{border-left:3px solid #cbd5e1;border-radius:0 10px 10px 0;overflow:hidden;border:1px solid var(--border);border-left-width:3px}
+.risk-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:filter .1s}
+.risk-summary::-webkit-details-marker{display:none}
+.risk-summary:hover{filter:brightness(.97)}
+details.risk-item[open] .expand-icon{transform:rotate(90deg)}
+.risk-name{font-weight:600;font-size:13px;flex:1;color:var(--text-primary)}
+.risk-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Datasets ── */
+.dataset-list{display:flex;flex-direction:column;gap:8px}
+.dataset-item{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dataset-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;background:var(--navy-subtle)}
+.dataset-summary::-webkit-details-marker{display:none}
+.dataset-summary:hover{background:var(--navy-border)}
+details.dataset-item[open] .expand-icon{transform:rotate(90deg)}
+.dataset-summary-main{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap}
+.dataset-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.dataset-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Evaluation cards ── */
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.eval-card{border:1px solid var(--border);border-radius:10px;padding:18px;background:var(--navy-subtle);display:flex;flex-direction:column;gap:10px}
+.eval-metric-name{font-weight:700;font-size:13px;color:var(--navy);line-height:1.4}
+.eval-justification{font-size:12px;color:var(--text-muted);line-height:1.6;border-top:1px solid var(--border);padding-top:10px}
+.eval-result-row{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+.eval-result-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
+.eval-result{font-family:'Consolas','Monaco',monospace;font-size:12px;color:#166534;font-weight:700;background:#dcfce7;padding:2px 10px;border-radius:6px}
+.eval-method-details{margin-top:4px}
+.eval-method-toggle{cursor:pointer;list-style:none;user-select:none;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy-light)}
+.eval-method-toggle::-webkit-details-marker{display:none}
+.expand-icon-sm{font-size:8px;transition:transform .15s;display:inline-block}
+details.eval-method-details[open] .expand-icon-sm{transform:rotate(90deg)}
+.eval-method-body{margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.6;padding:10px 12px;background:var(--card-bg);border-radius:6px;border:1px solid var(--border)}
+
+/* ── Changes ── */
+.changes-list{display:flex;flex-direction:column;gap:10px}
+.change-card{border:1px solid var(--border);border-radius:10px;padding:16px 20px;background:var(--navy-subtle)}
+.change-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.change-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.change-freq-badge{font-size:11px;font-weight:700;color:#9a3412;background:#ffedd5;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.change-impact{font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+/* ── Standards ── */
+.standards-list{display:flex;flex-direction:column;gap:0}
+.standard-item{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.standard-item:last-child{border-bottom:none}
+.standard-num{font-size:11px;font-weight:700;color:var(--card-bg);background:var(--navy);width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.standard-main{display:flex;flex-direction:column;gap:3px;flex:1}
+.standard-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.standard-detail{font-size:12px;color:var(--text-muted);line-height:1.5}
+.standard-link{font-size:11px;font-weight:700;color:var(--navy);background:var(--navy-border);padding:3px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.standard-link:hover{background:var(--navy-light);color:#fff;text-decoration:none}
+
+/* ── Components ── */
+.component-list{display:flex;flex-direction:column;gap:0}
+.component-item{display:flex;flex-direction:column;gap:5px;padding:14px 0;border-bottom:1px solid var(--border)}
+.component-item:last-child{border-bottom:none}
+.component-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.component-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.component-desc{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+/* ── Misc ── */
+.empty{color:var(--text-muted);font-style:italic;font-size:12px}
+.empty-state{color:var(--text-muted);font-style:italic;font-size:13px;padding:8px 0}
+
+footer{background:var(--navy);color:rgba(255,255,255,.4);margin-top:8px;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+footer a:hover{color:#fff}
+.footer-brand{font-weight:700;color:rgba(255,255,255,.7);font-size:11px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  header{padding:22px 20px}
+  .info-label{width:130px}
+  .eval-grid{grid-template-columns:1fr}
+  .nav-link{padding:12px 10px;font-size:11px}
+  .section-body{padding:16px}
+  .container{padding:20px 16px 40px}
+}
+
+/* ── Print ── */
+@media print{
+  body{background:#fff}
+  .nav-bar{display:none}
+  .container{padding:16px 0 0;max-width:100%}
+  header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-section{box-shadow:none;border:1px solid var(--border);break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details.risk-item,details.dataset-item,details.eval-method-details{overflow:visible}
+  .eval-grid{grid-template-columns:1fr 1fr}
+  @page{margin:1.2cm;size:A4}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>AI Disclosure Card Report</h1>
+    <div class="header-subtitle">Generated for Credit Risk Scorer</div>
+    <div class="header-meta">
+      <span class="header-meta-item"><span class="header-meta-label">Known Risks</span><span class="header-meta-value">5</span></span>
+      <span class="header-meta-item"><span class="header-meta-label">Generated</span><span class="header-meta-value">Friday, 22 May 2026 18:29 (UTC+07:00)</span></span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner"><a class="nav-link" href="#general">General</a><a class="nav-link" href="#purpose">Purpose</a><a class="nav-link" href="#techniques">Techniques</a><a class="nav-link" href="#risks">Risks</a><a class="nav-link" href="#datasets">Datasets</a><a class="nav-link" href="#evaluation">Evaluation</a><a class="nav-link" href="#cybersecurity">Cybersecurity</a><a class="nav-link" href="#changes">Changes</a><a class="nav-link" href="#standards">Standards</a><a class="nav-link" href="#components">Components</a></div>
+</nav>
+
+<div class="container">
+
+
+  <section class="card-section" id="general">
+    <div class="section-header">
+      <span class="section-icon">GI</span>
+      <h2 class="section-title">General Information</h2>
+      
+    </div>
+    <div class="section-body"><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">System Name</span>
+    <span class="info-value">Credit Risk Scorer</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">AI Type</span>
+    <span class="info-value"><span class="type-pill" style="background:#e8f5e9;color:#2e7d32;border-left-color:#2e7d32">Predictive</span></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Version</span>
+    <span class="info-value">3.2.1</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System License</span>
+    <span class="info-value">Proprietary - Licensed for use under Master Services Agreement</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Last Updated</span>
+    <span class="info-value">Tuesday, 10 March 2026</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Provider / Developer</span>
+    <span class="info-value">FinAI Solutions Pte. Ltd.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Contact</span>
+    <span class="info-value"><a href="mailto:ai-governance@finai.example.com">ai-governance@finai.example.com</a></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Input / Output Modalities</span>
+    <span class="info-value"><span class="empty">N/A</span></span>
+  </div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="purpose">
+    <div class="section-header">
+      <span class="section-icon">PU</span>
+      <h2 class="section-title">Purpose and Usage</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Intended Uses, Users and Domains</div>
+    <div class="prose-content">Predicts the probability of default (PD) for retail loan applicants. Intended for use by credit analysts and automated decisioning systems within retail banking. The model outputs a risk score (0-1000) and a risk tier (Low / Medium / High) per applicant.<br><br>Not intended for use in SME or corporate lending.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Usage Guidance</div>
+    <div class="prose-content">The model score should be used as one input within a broader credit assessment process. Final credit decisions must include human review for any applicant scored in the Medium or High tier.<br><br>Maximum recommended batch size: 500 applicants per run. Model performance is validated for Singapore-resident applicants only.<br><br>Output interpretation: scores above 750 indicate low default probability. Scores below 400 require mandatory human escalation.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="techniques">
+    <div class="section-header">
+      <span class="section-icon">TD</span>
+      <h2 class="section-title">Techniques and Development</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Main AI Techniques</div>
+    <div class="prose-content">Gradient boosting ensemble (XGBoost) trained on 5 years of historical retail loan performance data. Features include income, debt-to-income ratio, employment tenure, credit bureau tradeline data, and repayment history.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Architecture and Components</div>
+    <div class="prose-content">Single-model architecture. No generative or neural network components. Model is serialised as a binary artifact and served via a REST API. Inputs are validated and normalised by a pre-processing pipeline before scoring.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">External AI Service Calls</div>
+    <div class="prose-content">Credit bureau data is retrieved at inference time via a real-time API call to CBS (Credit Bureau Singapore). No other external AI services are called.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="risks">
+    <div class="section-header">
+      <span class="section-icon">RK</span>
+      <h2 class="section-title">Risks</h2>
+      <span class="section-count">5</span>
+    </div>
+    <div class="section-body"><div class="risk-list">
+    <details class="risk-item" style="border-left-color:#43a047;background:#f3fbf4" open>
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Insufficient model accuracy / soundness</span>
+        <span class="dim-pill" style="background:#e8f5e9;color:#2e7d32">Robustness &amp; Stability</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">The model is evaluated quarterly on a holdout dataset of recent loan originations. Performance thresholds (Gini &gt; 0.45, KS &gt; 0.30) are enforced before each production deployment. A champion-challenger framework is in place to compare new versions against the production model before promotion.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Do not use model scores for applicants outside the validated population (non-residents, SME borrowers). Monitor the Gini coefficient monthly; escalate if it drops below 0.40.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#00897b;background:#f0faf9" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Lack of explainability</span>
+        <span class="dim-pill" style="background:#e0f2f1;color:#00695c">Transparency</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">SHAP (SHapley Additive exPlanations) values are computed for each applicant at inference time and logged. The top 3 contributing features and their directional impact are available to credit analysts via the decisioning portal.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">For adverse action notices, use the SHAP-derived top features to generate compliant explanations to customers. Do not quote the raw score to customers without context.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#e53935;background:#fff5f5" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Unfair outcomes for protected groups</span>
+        <span class="dim-pill" style="background:#fce4ec;color:#c62828">Fairness &amp; Bias</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">The model is evaluated against gender and age cohorts using Equal Opportunity Difference (EOD) and Statistical Parity Difference (SPD) metrics at each quarterly review. Features that are direct proxies for protected attributes (e.g. postal district as a proxy for race) have been excluded from the feature set.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">If EOD or SPD exceeds 0.05 in any quarterly review, a fairness remediation workstream must be initiated before the next model deployment.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#f57c00;background:#fff8f0" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Breach or misalignment with regulatory or organisational standards</span>
+        <span class="dim-pill" style="background:#fff3e0;color:#e65100">Legal &amp; Regulatory</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">The model was reviewed by the Legal and Compliance team prior to deployment. An adverse action notice process compliant with MAS Notice 632 is in place. Model outputs are logged and retained for 5 years for regulatory audit purposes.</div>
+  </div>
+        
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#5c6bc0;background:#f5f6ff" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Inadequate human oversight</span>
+        <span class="dim-pill" style="background:#e8eaf6;color:#3949ab">Accountability &amp; Governance</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">All Medium and High risk tier decisions require credit analyst review before a decision is communicated to the applicant. A daily report flags any automated approvals in the Low tier for spot-check review. An override log tracks analyst departures from model recommendations.</div>
+  </div>
+        
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="datasets">
+    <div class="section-header">
+      <span class="section-icon">DS</span>
+      <h2 class="section-title">Datasets</h2>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body"><div class="dataset-list">
+    <details class="dataset-item" open>
+      <summary class="dataset-summary">
+        <span class="expand-icon">&#9654;</span>
+        <div class="dataset-summary-main">
+          <span class="dataset-name">Retail Loan Performance Dataset</span>
+          <span class="tag tag-teal">Structured tabular</span>
+        </div>
+      </summary>
+      <div class="dataset-body">
+        <div class="info-grid">
+          
+  <div class="info-row">
+    <span class="info-label">Sources</span>
+    <span class="info-value">Internal loan origination system (2020-2025). 842,000 loan accounts with 24-month performance windows.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Pre-processing</span>
+    <span class="info-value">Missing values imputed using median imputation for numeric features. Categorical features one-hot encoded. Outliers beyond the 99.5th percentile capped. Features scaled to [0,1] for tree-based model (scaling retained for API consistency).</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Personal / Private Data</span>
+    <span class="info-value">Training data contains NRIC-linked records. Records were pseudonymised prior to model training: NRIC replaced with internal customer ID. No names, addresses, or direct contact details are retained in training artifacts.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Representativeness</span>
+    <span class="info-value">Dataset assessed for representation across gender (Male: 54%, Female: 46%) and age bands (21-30: 18%, 31-40: 31%, 41-50: 28%, 51+: 23%). No significant underrepresentation identified. Applicants outside Singapore residency were excluded from training.</span>
+  </div>
+        </div>
+      </div>
+    </details>
+    <details class="dataset-item" >
+      <summary class="dataset-summary">
+        <span class="expand-icon">&#9654;</span>
+        <div class="dataset-summary-main">
+          <span class="dataset-name">Credit Bureau Singapore (CBS) Tradeline Data</span>
+          <span class="tag tag-teal">Structured tabular - external</span>
+        </div>
+      </summary>
+      <div class="dataset-body">
+        <div class="info-grid">
+          
+  <div class="info-row">
+    <span class="info-label">Sources</span>
+    <span class="info-value">Retrieved via CBS API at inference time. Includes credit account history, outstanding balances, and repayment status for up to 24 months.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Pre-processing</span>
+    <span class="info-value">Aggregated at applicant level: total outstanding, count of delinquencies in last 12 months, oldest account age. Raw tradeline records are not stored.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Personal / Private Data</span>
+    <span class="info-value">CBS data contains personal credit history. Data is retrieved per transaction, processed in memory, and not persisted beyond the current inference request.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Representativeness</span>
+    <span class="info-value">Not assessed independently - CBS data reflects the full Singapore credit bureau population by definition.</span>
+  </div>
+        </div>
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="evaluation">
+    <div class="section-header">
+      <span class="section-icon">EV</span>
+      <h2 class="section-title">Evaluation and Testing</h2>
+      <span class="section-count">5</span>
+    </div>
+    <div class="section-body"><div class="eval-grid">
+    <div class="eval-card">
+      <div class="eval-metric-name">Gini Coefficient</div>
+      <div class="eval-justification">Standard discriminatory power metric for credit risk models. Measures the model's ability to rank borrowers by default probability.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.54 (holdout, Q1 2026)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Evaluated on a random 20% holdout of the 2024-2025 origination cohort. Minimum threshold: 0.45.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Kolmogorov-Smirnov (KS) Statistic</div>
+      <div class="eval-justification">Measures separation between the default and non-default score distributions.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.38 (holdout, Q1 2026)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Computed on the same holdout as Gini. Minimum threshold: 0.30.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Equal Opportunity Difference (EOD)</div>
+      <div class="eval-justification">MindForge Appendix F fairness metric. Measures disparity in true positive rates between demographic groups (gender cohorts).</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.018 (gender, Q1 2026)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Computed on holdout data segmented by declared gender. Threshold: must remain below 0.05.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Statistical Parity Difference (SPD)</div>
+      <div class="eval-justification">MindForge Appendix F fairness metric. Measures disparity in positive outcome rates between demographic groups.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.023 (gender, Q1 2026)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Computed on holdout data segmented by declared gender. Threshold: must remain below 0.05.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Input Feature Data Drift (Jensen-Shannon Divergence)</div>
+      <div class="eval-justification">MindForge Appendix F stability metric. Monitors distribution shift in input features between training and live production traffic.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">Max JSD: 0.04 across all features (March 2026 monitoring)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Computed monthly against training distribution baseline. Alert threshold: JSD &gt; 0.10 for any feature triggers model review.</div>
+      </details>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="cybersecurity">
+    <div class="section-header">
+      <span class="section-icon">CS</span>
+      <h2 class="section-title">Cybersecurity and Data Protection</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Data Shared with Provider</div>
+    <div class="prose-content">At inference time, applicant data (income, employment, debt) and CBS tradeline summary are transmitted to the scoring API over TLS 1.3. No data is retained by the model serving infrastructure beyond the duration of the request. Request and response payloads are logged to an audit trail stored in the FI's internal systems only.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Data Handling by Provider</div>
+    <div class="prose-content">FinAI Solutions does not retain customer data from inference requests. Model artifacts (weights, feature schemas) are stored in an encrypted model registry. Access to the model registry is restricted to the MLOps team via role-based access controls.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Cybersecurity Metrics and Results</div>
+    <div class="prose-content">Penetration test completed February 2026 by [external vendor]. No critical findings. One medium finding (parameter tampering) remediated in v3.2.1. Vulnerability scan run monthly; last scan: 14 March 2026 - no open critical or high CVEs in dependencies.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Security and Data Protection Attestations</div>
+    <div class="prose-content">SOC 2 Type II report available on request (covers model serving infrastructure and data handling). ISO/IEC 27001 certification held by FinAI Solutions (cert. #: ISFS-2024-0032, valid until December 2026).</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="changes">
+    <div class="section-header">
+      <span class="section-icon">CH</span>
+      <h2 class="section-title">Pre-Determined Changes</h2>
+      <span class="section-count">3</span>
+    </div>
+    <div class="section-body"><div class="changes-list">
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Quarterly model retraining</span>
+        <span class="change-freq-badge">Quarterly (Jan, Apr, Jul, Oct)</span>
+      </div>
+      <div class="change-impact">Minor score distribution shifts expected. FI will be notified 4 weeks prior to each deployment. A 2-week parallel run with the existing production model is conducted before full cutover.</div>
+    </div>
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">CBS API version upgrade</span>
+        <span class="change-freq-badge">As required by CBS (typically annual)</span>
+      </div>
+      <div class="change-impact">May affect tradeline feature definitions. FinAI Solutions will assess impact and notify FI at least 8 weeks before any CBS-driven model change.</div>
+    </div>
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Feature set review</span>
+        <span class="change-freq-badge">Annual</span>
+      </div>
+      <div class="change-impact">New features may be added or existing features removed based on predictive performance review. Any feature change triggers a full model revalidation cycle before deployment.</div>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="standards">
+    <div class="section-header">
+      <span class="section-icon">ST</span>
+      <h2 class="section-title">Standards and Certifications</h2>
+      <span class="section-count">4</span>
+    </div>
+    <div class="section-body"><div class="standards-list">
+    <div class="standard-item">
+      <span class="standard-num">01</span>
+      <div class="standard-main">
+        <span class="standard-name">ISO/IEC 42001:2023</span>
+        <span class="standard-detail">AI Management System certification in progress. Target completion: Q3 2026.</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">02</span>
+      <div class="standard-main">
+        <span class="standard-name">MAS Guidelines on Model Risk Management</span>
+        <span class="standard-detail">Model validated in accordance with MAS model risk management guidelines. Independent validation completed January 2026.</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">03</span>
+      <div class="standard-main">
+        <span class="standard-name">MindForge AI Risk Management Framework</span>
+        <span class="standard-detail">This AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026).</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">04</span>
+      <div class="standard-main">
+        <span class="standard-name">ISO/IEC 27001:2022</span>
+        <span class="standard-detail">Certification #ISFS-2024-0032. Valid until December 2026.</span>
+      </div>
+      <a class="standard-link" href="https://www.finai.example.com/certifications" target="_blank">View &#8599;</a>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="components">
+    <div class="section-header">
+      <span class="section-icon">CA</span>
+      <h2 class="section-title">Components and Architecture</h2>
+      <span class="section-count">4</span>
+    </div>
+    <div class="section-body"><div class="component-list">
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">XGBoost scoring model</span>
+          <span class="tag">v3.2.1</span>
+          
+        </div>
+        <div class="component-desc">Trained gradient boosting model artifact (.ubj format). Produces PD score and risk tier.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">Pre-processing pipeline</span>
+          <span class="tag">v2.1.0</span>
+          
+        </div>
+        <div class="component-desc">Feature validation, imputation, and normalisation layer. Runs before model inference.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">SHAP explainer</span>
+          <span class="tag">v0.46.0</span>
+          <a class="standard-link" href="https://github.com/shap/shap" target="_blank">Source &#8599;</a>
+        </div>
+        <div class="component-desc">Computes per-applicant SHAP values for the top 3 contributing features.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">CBS API client</span>
+          <span class="tag">v4.0.1</span>
+          
+        </div>
+        <div class="component-desc">Retrieves tradeline data from Credit Bureau Singapore at inference time.</div>
+      </div></div><div style="margin-top:20px">
+  <div class="prose-block">
+    <div class="prose-label">Data Flow Description</div>
+    <div class="prose-content">Applicant data is submitted by the FI's loan origination system to the scoring API endpoint (POST /v1/score).<br><br>The pre-processing pipeline validates and normalises inputs, then calls the CBS API client to retrieve tradeline data.<br><br>The combined feature vector is passed to the XGBoost model, which outputs a score and risk tier.<br><br>The SHAP explainer computes feature attributions on the same input.<br><br>The API response returns: score (integer 0-1000), tier (Low/Medium/High), top 3 SHAP features, request ID, and timestamp.<br><br>All request/response pairs are written to the FI's audit log. No data is retained by FinAI Solutions infrastructure.</div>
+  </div></div></div>
+  </section>
+
+</div>
+
+<footer>
+  <span class="footer-brand">ai-risk-card</span>
+  <span>Aligned with the <a href="https://www.mas.gov.sg/news/media-releases/2026/mas-partners-industry-to-develop-ai-risk-management-toolkit-for-the-financial-sector" target="_blank">MindForge AI Risk Management Framework</a> &bull; Appendix E &bull; January 2026</span>
+</footer>
+
+</body>
+</html>

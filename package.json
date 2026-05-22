@@ -1,0 +1,30 @@
+{
+  "name": "ai-risk-card",
+  "version": "0.1.0",
+  "description": "Generate clean HTML AI disclosure cards aligned with the MindForge AI Risk Management Framework",
+  "keywords": ["ai", "governance", "risk", "mindforge", "mas", "disclosure", "ai-card", "fintech", "compliance"],
+  "author": "Widhi Putri",
+  "license": "MIT",
+  "main": "src/report.js",
+  "bin": {
+    "ai-risk-card": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/widhiputri/ai-risk-card.git"
+  },
+  "homepage": "https://github.com/widhiputri/ai-risk-card#readme",
+  "bugs": {
+    "url": "https://github.com/widhiputri/ai-risk-card/issues"
+  }
+}

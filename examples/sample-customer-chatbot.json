@@ -1,0 +1,185 @@
+{
+  "general": {
+    "name": "Customer Service Assistant",
+    "version": "1.4.0",
+    "lastUpdated": "2026-04-01",
+    "provider": "ChatCore AI Pte. Ltd.",
+    "contact": "governance@chatcore.example.com",
+    "license": "Proprietary - SaaS subscription under Enterprise Agreement"
+  },
+  "aiType": "Generative",
+  "modalities": ["Text"],
+  "purpose": {
+    "intendedUse": "A generative AI chatbot deployed on the FI's retail banking web and mobile platforms. Handles customer enquiries related to account balances, transaction history, product information, and general banking FAQs. Intended for use by retail customers aged 18 and above.\n\nNot intended for: investment advice, loan decisioning, complaint resolution requiring human judgement, or any interaction involving customers identified as vulnerable.",
+    "usageGuidance": "The chatbot must be clearly identified as an AI system at the start of every session. A handoff to a human agent must be offered at any point upon customer request, and must be triggered automatically for: complaints, expressions of financial distress, requests for regulatory disclosures, and any topic outside the approved scope.\n\nMaximum conversation turns per session: 20. Sessions exceeding this limit are automatically handed off to a human agent.\n\nOutputs must not be presented as definitive financial advice. All product-related outputs must include a standard disclaimer directing customers to verify details on the FI's official website."
+  },
+  "techniques": {
+    "description": "Retrieval-Augmented Generation (RAG) architecture built on a third-party large language model (LLM) foundation model. The system retrieves relevant content from an FI-controlled knowledge base (product FAQs, terms and conditions, regulatory disclosures) before generating responses. This grounds outputs in verified FI content and reduces hallucination risk.",
+    "architecture": "Three-layer architecture:\n1. Input layer: user message is passed through an input filter (jailbreak and off-topic detection) before reaching the LLM.\n2. Retrieval layer: a vector database stores embeddings of the FI's approved knowledge base. Relevant chunks are retrieved based on semantic similarity to the user query.\n3. Generation layer: the LLM generates a response grounded in the retrieved chunks. Output is passed through an output filter (toxicity, policy compliance) before being returned to the user.\n\nThe foundation model is provided as a managed API by ChatCore AI. The FI owns and controls the knowledge base.",
+    "externalServices": "ChatCore AI managed LLM API (text generation). Calls include the user message, retrieved knowledge base chunks, and a system prompt defined by the FI. No customer PII is included in API calls - messages are anonymised before transmission."
+  },
+  "risks": [
+    {
+      "risk": "Hallucination / Fabrication / Confabulation",
+      "dimension": "Robustness & Stability",
+      "mitigation": "RAG architecture grounds responses in FI-approved content, reducing reliance on the model's parametric knowledge. A consistency check is run on each response: the output is compared against the retrieved source chunks using BERTScore. Responses with low source similarity trigger a fallback response and human handoff.",
+      "guidance": "Do not deploy the chatbot for topics not covered by the knowledge base without first adding verified content. Monitor the human handoff rate weekly - a spike may indicate the model is encountering out-of-scope topics."
+    },
+    {
+      "risk": "Prompt injection",
+      "dimension": "Cyber & Data Security",
+      "mitigation": "Input filtering layer screens all user messages for prompt injection patterns using a combination of regex rules and a secondary classifier model. Detected injection attempts are blocked and logged. The system prompt is hardened and not exposed to users. Knowledge base retrieval uses parameterised queries to prevent injection via retrieved content.",
+      "guidance": "Review the injection attempt log monthly. Any novel injection pattern not caught by the filter must be added to the rule set within 5 business days of detection."
+    },
+    {
+      "risk": "Anthropomorphism",
+      "dimension": "Transparency",
+      "mitigation": "The system prompt explicitly instructs the model not to claim to be human, not to use first-person emotional language, and to identify itself as an AI when directly asked. The UI displays a persistent 'AI Assistant' label throughout the conversation. Session opening message includes a mandatory AI disclosure statement.",
+      "guidance": "Any UI or system prompt change that could remove or obscure the AI disclosure must go through the AI-specific review process before deployment."
+    },
+    {
+      "risk": "Unclear output accuracy",
+      "dimension": "Transparency",
+      "mitigation": "All product-specific outputs (interest rates, fees, eligibility criteria) are retrieved from the knowledge base rather than generated from model weights. Retrieved content is time-stamped and the knowledge base is refreshed weekly. Outputs that cannot be grounded in retrieved content trigger a fallback response.",
+      "guidance": "Ensure the knowledge base refresh process is monitored. Stale content (last updated more than 14 days ago) should trigger an alert to the content owner."
+    },
+    {
+      "risk": "Inadequate feedback and recourse mechanisms",
+      "dimension": "Accountability & Governance",
+      "mitigation": "Each chatbot response includes a thumbs up/down feedback button. Negative feedback is reviewed by the customer experience team weekly. Customers can escalate to a human agent at any time. A formal complaints process is accessible via a persistent link in the chat UI.",
+      "guidance": "Negative feedback rate above 15% on any topic category should trigger a content review for that category within 10 business days."
+    },
+    {
+      "risk": "Data leakage",
+      "dimension": "Cyber & Data Security",
+      "mitigation": "Customer PII is stripped from messages before transmission to the ChatCore AI API using a pre-processing anonymisation step. Account numbers, NRIC, and contact details are detected via regex and replaced with placeholders. The anonymisation layer is tested monthly against a set of synthetic PII-containing messages.",
+      "guidance": "The anonymisation ruleset must be reviewed quarterly and updated to reflect any new PII formats identified in production logs."
+    }
+  ],
+  "datasets": [
+    {
+      "name": "FI Knowledge Base",
+      "type": "Unstructured text - internal",
+      "sources": "FI-authored content: product FAQs, terms and conditions documents, regulatory disclosure statements, and approved customer communication templates. Maintained by the Product and Compliance teams.",
+      "preprocessing": "Documents are chunked into 512-token segments with 64-token overlap. Chunks are embedded using a text embedding model and stored in a vector database. Metadata tags (product category, last updated date, source document ID) are attached to each chunk.",
+      "personalData": "No customer personal data. All content is FI-authored documentation intended for public or customer-facing use.",
+      "representativeness": "Coverage assessed quarterly against the FI's full product catalogue. Current coverage: 94% of active retail products. Gaps are flagged to content owners for remediation."
+    },
+    {
+      "name": "Evaluation Conversation Dataset",
+      "type": "Synthetic and human-annotated",
+      "sources": "500 synthetic customer conversations generated by the QA team covering the top 50 customer enquiry types. Annotated by 3 human reviewers for response accuracy, policy compliance, and tone appropriateness.",
+      "preprocessing": "Conversations reviewed for PII before use. Annotation disagreements resolved by majority vote. Dataset versioned and stored in the FI's internal data repository.",
+      "personalData": "Synthetic data only. No real customer conversations used in evaluation.",
+      "representativeness": "Covers standard and edge case scenarios including off-topic requests, emotional language, and attempted jailbreaks. Updated semi-annually to reflect new products and observed edge cases from production."
+    }
+  ],
+  "evaluation": [
+    {
+      "metric": "Policy Override Frequency (POF)",
+      "justification": "MindForge Appendix F metric. Measures the proportion of responses that deviate from the FI's defined policies (scope restrictions, disclosure requirements, handoff triggers).",
+      "result": "0.8% (April 2026 evaluation)",
+      "methodology": "500-conversation evaluation dataset. Each response assessed by the output filter and spot-checked by human reviewers for policy compliance. POF = policy deviation instances / total prompts x 100%."
+    },
+    {
+      "metric": "Toxicity Score",
+      "justification": "MindForge Appendix F metric. Measures the proportion of outputs containing toxic, offensive, or harmful content.",
+      "result": "0.0% (April 2026 evaluation)",
+      "methodology": "All 500 evaluation responses assessed by the output filter toxicity classifier. Zero toxic outputs detected. Threshold: must remain below 1%."
+    },
+    {
+      "metric": "LLM-as-a-judge Bias Scoring",
+      "justification": "MindForge Appendix F metric. Assesses whether response quality or tone varies based on customer context (e.g. name, language, inferred demographics).",
+      "result": "Biased outputs: 1.2% (April 2026 evaluation)",
+      "methodology": "100 conversation pairs tested with varying customer name and language context (English, Mandarin, Malay, Tamil). A judge LLM assessed response pairs for quality and tone disparity. Threshold: must remain below 5%."
+    },
+    {
+      "metric": "Consistency Check (BERTScore hallucination proxy)",
+      "justification": "MindForge Appendix F metric. Assesses factual grounding of responses against retrieved knowledge base content. Lower similarity indicates higher hallucination risk.",
+      "result": "Mean BERTScore F1: 0.87 (April 2026 evaluation)",
+      "methodology": "Each generated response scored against the retrieved knowledge base chunks using BERTScore F1. Responses below 0.70 trigger a fallback. Threshold: mean score must remain above 0.80."
+    },
+    {
+      "metric": "Human Handoff Rate",
+      "justification": "Operational metric. High handoff rate indicates the model is encountering out-of-scope topics or failing to resolve customer queries, which may indicate knowledge base gaps or model degradation.",
+      "result": "11.3% (April 2026 production)",
+      "methodology": "Computed from production logs: handoff events / total sessions x 100%. Monitored weekly. Alert threshold: above 20% triggers a model and knowledge base review."
+    }
+  ],
+  "cybersecurity": {
+    "dataShared": "Only the anonymised user message, the retrieved knowledge base chunks, and the FI-defined system prompt are transmitted to the ChatCore AI API. No customer account data, PII, or authentication tokens are included. Data is transmitted over TLS 1.3.",
+    "dataHandling": "ChatCore AI does not retain conversation data beyond the duration of the API request. No conversation content is used for model training. ChatCore AI's data processing is governed by a Data Processing Agreement (DPA) executed with the FI. Data residency: Singapore region only.",
+    "securityMetrics": "Penetration test completed March 2026 (external vendor). No critical findings. Two medium findings (session fixation, verbose error messages) remediated in v1.4.0. Jailbreak resilience tested using a library of 200 known jailbreak prompts - 98.5% blocked by input filter. Remaining 1.5% produced out-of-scope but non-harmful responses.",
+    "attestations": "ChatCore AI holds SOC 2 Type II (last audit: December 2025). ISO/IEC 27001 certified (cert. #: CC-2025-0871). FI's own deployment infrastructure is covered under the FI's existing ISO/IEC 27001 certification."
+  },
+  "changes": [
+    {
+      "change": "Foundation model version updates",
+      "frequency": "Quarterly (managed by ChatCore AI)",
+      "expectedImpact": "Minor changes to response style and capability. ChatCore AI provides 6 weeks advance notice. FI runs full evaluation dataset before each update is accepted into production."
+    },
+    {
+      "change": "Knowledge base refresh",
+      "frequency": "Weekly (managed by FI)",
+      "expectedImpact": "New and updated product content added. No model retraining required. Embedding regeneration for updated chunks runs automatically. Accuracy evaluation run on affected topic categories after each refresh."
+    },
+    {
+      "change": "Input/output filter rule updates",
+      "frequency": "As required (triggered by new jailbreak patterns or policy changes)",
+      "expectedImpact": "May increase or decrease handoff rate depending on filter sensitivity adjustment. Each filter change is tested against the evaluation dataset before deployment."
+    }
+  ],
+  "standards": [
+    {
+      "standard": "MAS Guidelines on Artificial Intelligence Risk Management",
+      "details": "Use case reviewed against proposed MAS Guidelines. Compliant with scope, oversight, and lifecycle management requirements."
+    },
+    {
+      "standard": "MindForge AI Risk Management Framework",
+      "details": "This AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026)."
+    },
+    {
+      "standard": "PDPC Advisory Guidelines on use of Personal Data in AI",
+      "details": "PII anonymisation process and data handling reviewed against PDPC advisory guidelines. Compliant as of April 2026."
+    },
+    {
+      "standard": "ISO/IEC 42001:2023",
+      "details": "ChatCore AI AI Management System certification in progress. Target: Q4 2026."
+    }
+  ],
+  "components": {
+    "components": [
+      {
+        "name": "ChatCore LLM API",
+        "version": "gpt-fc-2.1",
+        "description": "Managed foundation model API (text generation). Accepts system prompt + retrieved context + user message. Returns generated response.",
+        "source": null
+      },
+      {
+        "name": "Input filter",
+        "version": "2.3.1",
+        "description": "Screens user messages for jailbreak attempts, off-topic requests, and PII before passing to retrieval and generation layers.",
+        "source": null
+      },
+      {
+        "name": "Output filter",
+        "version": "2.3.1",
+        "description": "Screens generated responses for toxicity, policy compliance, and hallucination risk (BERTScore) before delivery to the user.",
+        "source": null
+      },
+      {
+        "name": "Vector database (retrieval layer)",
+        "version": "pgvector 0.7.0",
+        "description": "Stores embeddings of the FI's knowledge base. Performs semantic similarity search to retrieve relevant chunks for each user query.",
+        "source": "https://github.com/pgvector/pgvector"
+      },
+      {
+        "name": "PII anonymisation layer",
+        "version": "1.1.0",
+        "description": "Detects and replaces customer PII (NRIC, account numbers, contact details) in user messages before transmission to the ChatCore AI API.",
+        "source": null
+      }
+    ],
+    "dataFlowDescription": "1. Customer sends a message via the web or mobile UI.\n2. The PII anonymisation layer strips any detected personal data from the message.\n3. The input filter assesses the anonymised message for jailbreak attempts and off-topic content. Blocked messages return a standard deflection response.\n4. The retrieval layer queries the vector database with the user message and returns the top 5 most relevant knowledge base chunks.\n5. The anonymised message, retrieved chunks, and FI system prompt are sent to the ChatCore LLM API.\n6. The generated response is assessed by the output filter for toxicity and policy compliance. Responses failing the filter trigger a fallback response and human handoff.\n7. The approved response is returned to the customer UI.\n8. The full interaction (pre-anonymisation message, filter verdicts, response, BERTScore) is written to the FI's internal audit log."
+  }
+}

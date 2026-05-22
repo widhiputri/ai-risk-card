@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Disclosure Card Report - Customer Service Assistant</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%230b1f42' width='24' height='24' rx='4'/><path fill='%23fff' d='M6 7h12v2H6zm0 4h12v2H6zm0 4h8v2H6z'/></svg>">
+<style>
+:root{
+  --navy:#0b1f42;
+  --navy-mid:#1a3a6b;
+  --navy-light:#2a52a0;
+  --navy-subtle:#eef3fb;
+  --navy-border:#d5e0f5;
+  --body-bg:#edf1f9;
+  --card-bg:#ffffff;
+  --text-primary:#0f172a;
+  --text-secondary:#475569;
+  --text-muted:#94a3b8;
+  --border:#e2e8f0;
+  --radius:12px;
+  --shadow:0 2px 8px rgba(11,31,66,.09),0 0 0 1px rgba(11,31,66,.04);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6;color:var(--text-primary);background:var(--body-bg)}
+a{color:var(--navy-light);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.header-inner{position:relative;padding:36px 20px 36px;text-align:left}
+header h1{font-size:36px;font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px}
+.header-subtitle{font-size:20px;font-weight:500;opacity:.75;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.header-type-badge{font-size:11px;font-weight:700;padding:3px 11px;border-radius:4px;letter-spacing:.4px;vertical-align:middle;border-left:3px solid transparent}
+.header-meta{display:flex;gap:0;flex-wrap:wrap;margin-top:12px}
+.header-meta-item{font-size:12px;opacity:.65;padding-right:20px;margin-right:20px;border-right:1px solid rgba(255,255,255,.2);line-height:2}
+.header-meta-item:last-child{border-right:none}
+.header-meta-label{opacity:.7;margin-right:4px}
+.header-meta-value{font-weight:600}
+.framework-tag{margin-top:10px;font-size:12px;opacity:.5;letter-spacing:.2px}
+
+/* ── Nav ── */
+.nav-bar{background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(11,31,66,.06)}
+.nav-inner{padding:0 32px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-link{font-size:12px;font-weight:600;color:var(--text-muted);padding:13px 0;flex:1;text-align:center;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-link:hover{color:var(--navy);border-bottom-color:var(--navy-border);text-decoration:none}
+
+/* ── Layout ── */
+.container{padding:28px 32px 48px}
+
+/* ── Cards ── */
+.card-section{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--navy-subtle)}
+.section-icon{width:32px;height:32px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px;flex-shrink:0;line-height:1;font-family:'Consolas','Monaco',monospace}
+.section-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;flex:1}
+.section-count{font-size:11px;font-weight:700;color:var(--navy-light);background:var(--navy-border);padding:2px 9px;border-radius:20px}
+.section-body{padding:22px 24px}
+
+/* ── Info rows ── */
+.info-grid{display:flex;flex-direction:column}
+.info-row{display:flex;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;width:260px;flex-shrink:0}
+.info-value{font-size:13px;color:var(--text-primary);flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ── Prose blocks ── */
+.prose-block{margin-bottom:18px}
+.prose-block:last-child{margin-bottom:0}
+.prose-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
+.prose-content{font-size:13px;color:var(--text-secondary);line-height:1.75;background:var(--navy-subtle);border-left:3px solid var(--navy-border);border-radius:0 8px 8px 0;padding:12px 16px}
+
+/* ── Tags ── */
+.tag{font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag-teal{background:#e0f2f1;color:#00695c}
+.type-pill{font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;white-space:nowrap;border-left:3px solid transparent}
+.dim-pill{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+
+/* ── Expand icon ── */
+.expand-icon{font-size:9px;color:var(--text-muted);flex-shrink:0;transition:transform .15s;display:inline-block}
+
+/* ── Risks ── */
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk-item{border-left:3px solid #cbd5e1;border-radius:0 10px 10px 0;overflow:hidden;border:1px solid var(--border);border-left-width:3px}
+.risk-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:filter .1s}
+.risk-summary::-webkit-details-marker{display:none}
+.risk-summary:hover{filter:brightness(.97)}
+details.risk-item[open] .expand-icon{transform:rotate(90deg)}
+.risk-name{font-weight:600;font-size:13px;flex:1;color:var(--text-primary)}
+.risk-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Datasets ── */
+.dataset-list{display:flex;flex-direction:column;gap:8px}
+.dataset-item{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dataset-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;background:var(--navy-subtle)}
+.dataset-summary::-webkit-details-marker{display:none}
+.dataset-summary:hover{background:var(--navy-border)}
+details.dataset-item[open] .expand-icon{transform:rotate(90deg)}
+.dataset-summary-main{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap}
+.dataset-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.dataset-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Evaluation cards ── */
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.eval-card{border:1px solid var(--border);border-radius:10px;padding:18px;background:var(--navy-subtle);display:flex;flex-direction:column;gap:10px}
+.eval-metric-name{font-weight:700;font-size:13px;color:var(--navy);line-height:1.4}
+.eval-justification{font-size:12px;color:var(--text-muted);line-height:1.6;border-top:1px solid var(--border);padding-top:10px}
+.eval-result-row{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+.eval-result-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
+.eval-result{font-family:'Consolas','Monaco',monospace;font-size:12px;color:#166534;font-weight:700;background:#dcfce7;padding:2px 10px;border-radius:6px}
+.eval-method-details{margin-top:4px}
+.eval-method-toggle{cursor:pointer;list-style:none;user-select:none;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy-light)}
+.eval-method-toggle::-webkit-details-marker{display:none}
+.expand-icon-sm{font-size:8px;transition:transform .15s;display:inline-block}
+details.eval-method-details[open] .expand-icon-sm{transform:rotate(90deg)}
+.eval-method-body{margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.6;padding:10px 12px;background:var(--card-bg);border-radius:6px;border:1px solid var(--border)}
+
+/* ── Changes ── */
+.changes-list{display:flex;flex-direction:column;gap:10px}
+.change-card{border:1px solid var(--border);border-radius:10px;padding:16px 20px;background:var(--navy-subtle)}
+.change-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.change-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.change-freq-badge{font-size:11px;font-weight:700;color:#9a3412;background:#ffedd5;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.change-impact{font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+/* ── Standards ── */
+.standards-list{display:flex;flex-direction:column;gap:0}
+.standard-item{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.standard-item:last-child{border-bottom:none}
+.standard-num{font-size:11px;font-weight:700;color:var(--card-bg);background:var(--navy);width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.standard-main{display:flex;flex-direction:column;gap:3px;flex:1}
+.standard-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.standard-detail{font-size:12px;color:var(--text-muted);line-height:1.5}
+.standard-link{font-size:11px;font-weight:700;color:var(--navy);background:var(--navy-border);padding:3px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.standard-link:hover{background:var(--navy-light);color:#fff;text-decoration:none}
+
+/* ── Components ── */
+.component-list{display:flex;flex-direction:column;gap:0}
+.component-item{display:flex;flex-direction:column;gap:5px;padding:14px 0;border-bottom:1px solid var(--border)}
+.component-item:last-child{border-bottom:none}
+.component-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.component-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.component-desc{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+/* ── Misc ── */
+.empty{color:var(--text-muted);font-style:italic;font-size:12px}
+.empty-state{color:var(--text-muted);font-style:italic;font-size:13px;padding:8px 0}
+
+footer{background:var(--navy);color:rgba(255,255,255,.4);margin-top:8px;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+footer a:hover{color:#fff}
+.footer-brand{font-weight:700;color:rgba(255,255,255,.7);font-size:11px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  header{padding:22px 20px}
+  .info-label{width:130px}
+  .eval-grid{grid-template-columns:1fr}
+  .nav-link{padding:12px 10px;font-size:11px}
+  .section-body{padding:16px}
+  .container{padding:20px 16px 40px}
+}
+
+/* ── Print ── */
+@media print{
+  body{background:#fff}
+  .nav-bar{display:none}
+  .container{padding:16px 0 0;max-width:100%}
+  header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-section{box-shadow:none;border:1px solid var(--border);break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details.risk-item,details.dataset-item,details.eval-method-details{overflow:visible}
+  .eval-grid{grid-template-columns:1fr 1fr}
+  @page{margin:1.2cm;size:A4}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>AI Disclosure Card Report</h1>
+    <div class="header-subtitle">Generated for Customer Service Assistant</div>
+    <div class="header-meta">
+      <span class="header-meta-item"><span class="header-meta-label">Known Risks</span><span class="header-meta-value">6</span></span>
+      <span class="header-meta-item"><span class="header-meta-label">Generated</span><span class="header-meta-value">Friday, 22 May 2026 18:29 (UTC+07:00)</span></span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner"><a class="nav-link" href="#general">General</a><a class="nav-link" href="#purpose">Purpose</a><a class="nav-link" href="#techniques">Techniques</a><a class="nav-link" href="#risks">Risks</a><a class="nav-link" href="#datasets">Datasets</a><a class="nav-link" href="#evaluation">Evaluation</a><a class="nav-link" href="#cybersecurity">Cybersecurity</a><a class="nav-link" href="#changes">Changes</a><a class="nav-link" href="#standards">Standards</a><a class="nav-link" href="#components">Components</a></div>
+</nav>
+
+<div class="container">
+
+
+  <section class="card-section" id="general">
+    <div class="section-header">
+      <span class="section-icon">GI</span>
+      <h2 class="section-title">General Information</h2>
+      
+    </div>
+    <div class="section-body"><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">System Name</span>
+    <span class="info-value">Customer Service Assistant</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">AI Type</span>
+    <span class="info-value"><span class="type-pill" style="background:#ede7f6;color:#6a1b9a;border-left-color:#6a1b9a">Generative</span></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Version</span>
+    <span class="info-value">1.4.0</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System License</span>
+    <span class="info-value">Proprietary - SaaS subscription under Enterprise Agreement</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Last Updated</span>
+    <span class="info-value">Wednesday, 1 April 2026</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Provider / Developer</span>
+    <span class="info-value">ChatCore AI Pte. Ltd.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Contact</span>
+    <span class="info-value"><a href="mailto:governance@chatcore.example.com">governance@chatcore.example.com</a></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Input / Output Modalities</span>
+    <span class="info-value"><span class="tag">Text</span></span>
+  </div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="purpose">
+    <div class="section-header">
+      <span class="section-icon">PU</span>
+      <h2 class="section-title">Purpose and Usage</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Intended Uses, Users and Domains</div>
+    <div class="prose-content">A generative AI chatbot deployed on the FI's retail banking web and mobile platforms. Handles customer enquiries related to account balances, transaction history, product information, and general banking FAQs. Intended for use by retail customers aged 18 and above.<br><br>Not intended for: investment advice, loan decisioning, complaint resolution requiring human judgement, or any interaction involving customers identified as vulnerable.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Usage Guidance</div>
+    <div class="prose-content">The chatbot must be clearly identified as an AI system at the start of every session. A handoff to a human agent must be offered at any point upon customer request, and must be triggered automatically for: complaints, expressions of financial distress, requests for regulatory disclosures, and any topic outside the approved scope.<br><br>Maximum conversation turns per session: 20. Sessions exceeding this limit are automatically handed off to a human agent.<br><br>Outputs must not be presented as definitive financial advice. All product-related outputs must include a standard disclaimer directing customers to verify details on the FI's official website.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="techniques">
+    <div class="section-header">
+      <span class="section-icon">TD</span>
+      <h2 class="section-title">Techniques and Development</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Main AI Techniques</div>
+    <div class="prose-content">Retrieval-Augmented Generation (RAG) architecture built on a third-party large language model (LLM) foundation model. The system retrieves relevant content from an FI-controlled knowledge base (product FAQs, terms and conditions, regulatory disclosures) before generating responses. This grounds outputs in verified FI content and reduces hallucination risk.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Architecture and Components</div>
+    <div class="prose-content">Three-layer architecture:<br>1. Input layer: user message is passed through an input filter (jailbreak and off-topic detection) before reaching the LLM.<br>2. Retrieval layer: a vector database stores embeddings of the FI's approved knowledge base. Relevant chunks are retrieved based on semantic similarity to the user query.<br>3. Generation layer: the LLM generates a response grounded in the retrieved chunks. Output is passed through an output filter (toxicity, policy compliance) before being returned to the user.<br><br>The foundation model is provided as a managed API by ChatCore AI. The FI owns and controls the knowledge base.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">External AI Service Calls</div>
+    <div class="prose-content">ChatCore AI managed LLM API (text generation). Calls include the user message, retrieved knowledge base chunks, and a system prompt defined by the FI. No customer PII is included in API calls - messages are anonymised before transmission.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="risks">
+    <div class="section-header">
+      <span class="section-icon">RK</span>
+      <h2 class="section-title">Risks</h2>
+      <span class="section-count">6</span>
+    </div>
+    <div class="section-body"><div class="risk-list">
+    <details class="risk-item" style="border-left-color:#43a047;background:#f3fbf4" open>
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Hallucination / Fabrication / Confabulation</span>
+        <span class="dim-pill" style="background:#e8f5e9;color:#2e7d32">Robustness &amp; Stability</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">RAG architecture grounds responses in FI-approved content, reducing reliance on the model's parametric knowledge. A consistency check is run on each response: the output is compared against the retrieved source chunks using BERTScore. Responses with low source similarity trigger a fallback response and human handoff.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Do not deploy the chatbot for topics not covered by the knowledge base without first adding verified content. Monitor the human handoff rate weekly - a spike may indicate the model is encountering out-of-scope topics.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#8e24aa;background:#fdf4ff" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Prompt injection</span>
+        <span class="dim-pill" style="background:#f3e5f5;color:#6a1b9a">Cyber &amp; Data Security</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Input filtering layer screens all user messages for prompt injection patterns using a combination of regex rules and a secondary classifier model. Detected injection attempts are blocked and logged. The system prompt is hardened and not exposed to users. Knowledge base retrieval uses parameterised queries to prevent injection via retrieved content.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Review the injection attempt log monthly. Any novel injection pattern not caught by the filter must be added to the rule set within 5 business days of detection.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#00897b;background:#f0faf9" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Anthropomorphism</span>
+        <span class="dim-pill" style="background:#e0f2f1;color:#00695c">Transparency</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">The system prompt explicitly instructs the model not to claim to be human, not to use first-person emotional language, and to identify itself as an AI when directly asked. The UI displays a persistent 'AI Assistant' label throughout the conversation. Session opening message includes a mandatory AI disclosure statement.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Any UI or system prompt change that could remove or obscure the AI disclosure must go through the AI-specific review process before deployment.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#00897b;background:#f0faf9" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Unclear output accuracy</span>
+        <span class="dim-pill" style="background:#e0f2f1;color:#00695c">Transparency</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">All product-specific outputs (interest rates, fees, eligibility criteria) are retrieved from the knowledge base rather than generated from model weights. Retrieved content is time-stamped and the knowledge base is refreshed weekly. Outputs that cannot be grounded in retrieved content trigger a fallback response.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Ensure the knowledge base refresh process is monitored. Stale content (last updated more than 14 days ago) should trigger an alert to the content owner.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#5c6bc0;background:#f5f6ff" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Inadequate feedback and recourse mechanisms</span>
+        <span class="dim-pill" style="background:#e8eaf6;color:#3949ab">Accountability &amp; Governance</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Each chatbot response includes a thumbs up/down feedback button. Negative feedback is reviewed by the customer experience team weekly. Customers can escalate to a human agent at any time. A formal complaints process is accessible via a persistent link in the chat UI.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Negative feedback rate above 15% on any topic category should trigger a content review for that category within 10 business days.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#8e24aa;background:#fdf4ff" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Data leakage</span>
+        <span class="dim-pill" style="background:#f3e5f5;color:#6a1b9a">Cyber &amp; Data Security</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Customer PII is stripped from messages before transmission to the ChatCore AI API using a pre-processing anonymisation step. Account numbers, NRIC, and contact details are detected via regex and replaced with placeholders. The anonymisation layer is tested monthly against a set of synthetic PII-containing messages.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">The anonymisation ruleset must be reviewed quarterly and updated to reflect any new PII formats identified in production logs.</div>
+  </div>
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="datasets">
+    <div class="section-header">
+      <span class="section-icon">DS</span>
+      <h2 class="section-title">Datasets</h2>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body"><div class="dataset-list">
+    <details class="dataset-item" open>
+      <summary class="dataset-summary">
+        <span class="expand-icon">&#9654;</span>
+        <div class="dataset-summary-main">
+          <span class="dataset-name">FI Knowledge Base</span>
+          <span class="tag tag-teal">Unstructured text - internal</span>
+        </div>
+      </summary>
+      <div class="dataset-body">
+        <div class="info-grid">
+          
+  <div class="info-row">
+    <span class="info-label">Sources</span>
+    <span class="info-value">FI-authored content: product FAQs, terms and conditions documents, regulatory disclosure statements, and approved customer communication templates. Maintained by the Product and Compliance teams.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Pre-processing</span>
+    <span class="info-value">Documents are chunked into 512-token segments with 64-token overlap. Chunks are embedded using a text embedding model and stored in a vector database. Metadata tags (product category, last updated date, source document ID) are attached to each chunk.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Personal / Private Data</span>
+    <span class="info-value">No customer personal data. All content is FI-authored documentation intended for public or customer-facing use.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Representativeness</span>
+    <span class="info-value">Coverage assessed quarterly against the FI's full product catalogue. Current coverage: 94% of active retail products. Gaps are flagged to content owners for remediation.</span>
+  </div>
+        </div>
+      </div>
+    </details>
+    <details class="dataset-item" >
+      <summary class="dataset-summary">
+        <span class="expand-icon">&#9654;</span>
+        <div class="dataset-summary-main">
+          <span class="dataset-name">Evaluation Conversation Dataset</span>
+          <span class="tag tag-teal">Synthetic and human-annotated</span>
+        </div>
+      </summary>
+      <div class="dataset-body">
+        <div class="info-grid">
+          
+  <div class="info-row">
+    <span class="info-label">Sources</span>
+    <span class="info-value">500 synthetic customer conversations generated by the QA team covering the top 50 customer enquiry types. Annotated by 3 human reviewers for response accuracy, policy compliance, and tone appropriateness.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Pre-processing</span>
+    <span class="info-value">Conversations reviewed for PII before use. Annotation disagreements resolved by majority vote. Dataset versioned and stored in the FI's internal data repository.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Personal / Private Data</span>
+    <span class="info-value">Synthetic data only. No real customer conversations used in evaluation.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Representativeness</span>
+    <span class="info-value">Covers standard and edge case scenarios including off-topic requests, emotional language, and attempted jailbreaks. Updated semi-annually to reflect new products and observed edge cases from production.</span>
+  </div>
+        </div>
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="evaluation">
+    <div class="section-header">
+      <span class="section-icon">EV</span>
+      <h2 class="section-title">Evaluation and Testing</h2>
+      <span class="section-count">5</span>
+    </div>
+    <div class="section-body"><div class="eval-grid">
+    <div class="eval-card">
+      <div class="eval-metric-name">Policy Override Frequency (POF)</div>
+      <div class="eval-justification">MindForge Appendix F metric. Measures the proportion of responses that deviate from the FI's defined policies (scope restrictions, disclosure requirements, handoff triggers).</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.8% (April 2026 evaluation)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">500-conversation evaluation dataset. Each response assessed by the output filter and spot-checked by human reviewers for policy compliance. POF = policy deviation instances / total prompts x 100%.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Toxicity Score</div>
+      <div class="eval-justification">MindForge Appendix F metric. Measures the proportion of outputs containing toxic, offensive, or harmful content.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">0.0% (April 2026 evaluation)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">All 500 evaluation responses assessed by the output filter toxicity classifier. Zero toxic outputs detected. Threshold: must remain below 1%.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">LLM-as-a-judge Bias Scoring</div>
+      <div class="eval-justification">MindForge Appendix F metric. Assesses whether response quality or tone varies based on customer context (e.g. name, language, inferred demographics).</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">Biased outputs: 1.2% (April 2026 evaluation)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">100 conversation pairs tested with varying customer name and language context (English, Mandarin, Malay, Tamil). A judge LLM assessed response pairs for quality and tone disparity. Threshold: must remain below 5%.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Consistency Check (BERTScore hallucination proxy)</div>
+      <div class="eval-justification">MindForge Appendix F metric. Assesses factual grounding of responses against retrieved knowledge base content. Lower similarity indicates higher hallucination risk.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">Mean BERTScore F1: 0.87 (April 2026 evaluation)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Each generated response scored against the retrieved knowledge base chunks using BERTScore F1. Responses below 0.70 trigger a fallback. Threshold: mean score must remain above 0.80.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Human Handoff Rate</div>
+      <div class="eval-justification">Operational metric. High handoff rate indicates the model is encountering out-of-scope topics or failing to resolve customer queries, which may indicate knowledge base gaps or model degradation.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">11.3% (April 2026 production)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Computed from production logs: handoff events / total sessions x 100%. Monitored weekly. Alert threshold: above 20% triggers a model and knowledge base review.</div>
+      </details>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="cybersecurity">
+    <div class="section-header">
+      <span class="section-icon">CS</span>
+      <h2 class="section-title">Cybersecurity and Data Protection</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Data Shared with Provider</div>
+    <div class="prose-content">Only the anonymised user message, the retrieved knowledge base chunks, and the FI-defined system prompt are transmitted to the ChatCore AI API. No customer account data, PII, or authentication tokens are included. Data is transmitted over TLS 1.3.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Data Handling by Provider</div>
+    <div class="prose-content">ChatCore AI does not retain conversation data beyond the duration of the API request. No conversation content is used for model training. ChatCore AI's data processing is governed by a Data Processing Agreement (DPA) executed with the FI. Data residency: Singapore region only.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Cybersecurity Metrics and Results</div>
+    <div class="prose-content">Penetration test completed March 2026 (external vendor). No critical findings. Two medium findings (session fixation, verbose error messages) remediated in v1.4.0. Jailbreak resilience tested using a library of 200 known jailbreak prompts - 98.5% blocked by input filter. Remaining 1.5% produced out-of-scope but non-harmful responses.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Security and Data Protection Attestations</div>
+    <div class="prose-content">ChatCore AI holds SOC 2 Type II (last audit: December 2025). ISO/IEC 27001 certified (cert. #: CC-2025-0871). FI's own deployment infrastructure is covered under the FI's existing ISO/IEC 27001 certification.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="changes">
+    <div class="section-header">
+      <span class="section-icon">CH</span>
+      <h2 class="section-title">Pre-Determined Changes</h2>
+      <span class="section-count">3</span>
+    </div>
+    <div class="section-body"><div class="changes-list">
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Foundation model version updates</span>
+        <span class="change-freq-badge">Quarterly (managed by ChatCore AI)</span>
+      </div>
+      <div class="change-impact">Minor changes to response style and capability. ChatCore AI provides 6 weeks advance notice. FI runs full evaluation dataset before each update is accepted into production.</div>
+    </div>
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Knowledge base refresh</span>
+        <span class="change-freq-badge">Weekly (managed by FI)</span>
+      </div>
+      <div class="change-impact">New and updated product content added. No model retraining required. Embedding regeneration for updated chunks runs automatically. Accuracy evaluation run on affected topic categories after each refresh.</div>
+    </div>
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Input/output filter rule updates</span>
+        <span class="change-freq-badge">As required (triggered by new jailbreak patterns or policy changes)</span>
+      </div>
+      <div class="change-impact">May increase or decrease handoff rate depending on filter sensitivity adjustment. Each filter change is tested against the evaluation dataset before deployment.</div>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="standards">
+    <div class="section-header">
+      <span class="section-icon">ST</span>
+      <h2 class="section-title">Standards and Certifications</h2>
+      <span class="section-count">4</span>
+    </div>
+    <div class="section-body"><div class="standards-list">
+    <div class="standard-item">
+      <span class="standard-num">01</span>
+      <div class="standard-main">
+        <span class="standard-name">MAS Guidelines on Artificial Intelligence Risk Management</span>
+        <span class="standard-detail">Use case reviewed against proposed MAS Guidelines. Compliant with scope, oversight, and lifecycle management requirements.</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">02</span>
+      <div class="standard-main">
+        <span class="standard-name">MindForge AI Risk Management Framework</span>
+        <span class="standard-detail">This AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026).</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">03</span>
+      <div class="standard-main">
+        <span class="standard-name">PDPC Advisory Guidelines on use of Personal Data in AI</span>
+        <span class="standard-detail">PII anonymisation process and data handling reviewed against PDPC advisory guidelines. Compliant as of April 2026.</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">04</span>
+      <div class="standard-main">
+        <span class="standard-name">ISO/IEC 42001:2023</span>
+        <span class="standard-detail">ChatCore AI AI Management System certification in progress. Target: Q4 2026.</span>
+      </div>
+      
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="components">
+    <div class="section-header">
+      <span class="section-icon">CA</span>
+      <h2 class="section-title">Components and Architecture</h2>
+      <span class="section-count">5</span>
+    </div>
+    <div class="section-body"><div class="component-list">
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">ChatCore LLM API</span>
+          <span class="tag">vgpt-fc-2.1</span>
+          
+        </div>
+        <div class="component-desc">Managed foundation model API (text generation). Accepts system prompt + retrieved context + user message. Returns generated response.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">Input filter</span>
+          <span class="tag">v2.3.1</span>
+          
+        </div>
+        <div class="component-desc">Screens user messages for jailbreak attempts, off-topic requests, and PII before passing to retrieval and generation layers.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">Output filter</span>
+          <span class="tag">v2.3.1</span>
+          
+        </div>
+        <div class="component-desc">Screens generated responses for toxicity, policy compliance, and hallucination risk (BERTScore) before delivery to the user.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">Vector database (retrieval layer)</span>
+          <span class="tag">vpgvector 0.7.0</span>
+          <a class="standard-link" href="https://github.com/pgvector/pgvector" target="_blank">Source &#8599;</a>
+        </div>
+        <div class="component-desc">Stores embeddings of the FI's knowledge base. Performs semantic similarity search to retrieve relevant chunks for each user query.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-main">
+          <span class="component-name">PII anonymisation layer</span>
+          <span class="tag">v1.1.0</span>
+          
+        </div>
+        <div class="component-desc">Detects and replaces customer PII (NRIC, account numbers, contact details) in user messages before transmission to the ChatCore AI API.</div>
+      </div></div><div style="margin-top:20px">
+  <div class="prose-block">
+    <div class="prose-label">Data Flow Description</div>
+    <div class="prose-content">1. Customer sends a message via the web or mobile UI.<br>2. The PII anonymisation layer strips any detected personal data from the message.<br>3. The input filter assesses the anonymised message for jailbreak attempts and off-topic content. Blocked messages return a standard deflection response.<br>4. The retrieval layer queries the vector database with the user message and returns the top 5 most relevant knowledge base chunks.<br>5. The anonymised message, retrieved chunks, and FI system prompt are sent to the ChatCore LLM API.<br>6. The generated response is assessed by the output filter for toxicity and policy compliance. Responses failing the filter trigger a fallback response and human handoff.<br>7. The approved response is returned to the customer UI.<br>8. The full interaction (pre-anonymisation message, filter verdicts, response, BERTScore) is written to the FI's internal audit log.</div>
+  </div></div></div>
+  </section>
+
+</div>
+
+<footer>
+  <span class="footer-brand">ai-risk-card</span>
+  <span>Aligned with the <a href="https://www.mas.gov.sg/news/media-releases/2026/mas-partners-industry-to-develop-ai-risk-management-toolkit-for-the-financial-sector" target="_blank">MindForge AI Risk Management Framework</a> &bull; Appendix E &bull; January 2026</span>
+</footer>
+
+</body>
+</html>

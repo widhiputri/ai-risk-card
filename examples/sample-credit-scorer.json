@@ -1,0 +1,172 @@
+{
+  "general": {
+    "name": "Credit Risk Scorer",
+    "version": "3.2.1",
+    "lastUpdated": "2026-03-10",
+    "provider": "FinAI Solutions Pte. Ltd.",
+    "contact": "ai-governance@finai.example.com",
+    "license": "Proprietary - Licensed for use under Master Services Agreement"
+  },
+  "aiType": "Predictive",
+  "modalities": null,
+  "purpose": {
+    "intendedUse": "Predicts the probability of default (PD) for retail loan applicants. Intended for use by credit analysts and automated decisioning systems within retail banking. The model outputs a risk score (0-1000) and a risk tier (Low / Medium / High) per applicant.\n\nNot intended for use in SME or corporate lending.",
+    "usageGuidance": "The model score should be used as one input within a broader credit assessment process. Final credit decisions must include human review for any applicant scored in the Medium or High tier.\n\nMaximum recommended batch size: 500 applicants per run. Model performance is validated for Singapore-resident applicants only.\n\nOutput interpretation: scores above 750 indicate low default probability. Scores below 400 require mandatory human escalation."
+  },
+  "techniques": {
+    "description": "Gradient boosting ensemble (XGBoost) trained on 5 years of historical retail loan performance data. Features include income, debt-to-income ratio, employment tenure, credit bureau tradeline data, and repayment history.",
+    "architecture": "Single-model architecture. No generative or neural network components. Model is serialised as a binary artifact and served via a REST API. Inputs are validated and normalised by a pre-processing pipeline before scoring.",
+    "externalServices": "Credit bureau data is retrieved at inference time via a real-time API call to CBS (Credit Bureau Singapore). No other external AI services are called."
+  },
+  "risks": [
+    {
+      "risk": "Insufficient model accuracy / soundness",
+      "dimension": "Robustness & Stability",
+      "mitigation": "The model is evaluated quarterly on a holdout dataset of recent loan originations. Performance thresholds (Gini > 0.45, KS > 0.30) are enforced before each production deployment. A champion-challenger framework is in place to compare new versions against the production model before promotion.",
+      "guidance": "Do not use model scores for applicants outside the validated population (non-residents, SME borrowers). Monitor the Gini coefficient monthly; escalate if it drops below 0.40."
+    },
+    {
+      "risk": "Lack of explainability",
+      "dimension": "Transparency",
+      "mitigation": "SHAP (SHapley Additive exPlanations) values are computed for each applicant at inference time and logged. The top 3 contributing features and their directional impact are available to credit analysts via the decisioning portal.",
+      "guidance": "For adverse action notices, use the SHAP-derived top features to generate compliant explanations to customers. Do not quote the raw score to customers without context."
+    },
+    {
+      "risk": "Unfair outcomes for protected groups",
+      "dimension": "Fairness & Bias",
+      "mitigation": "The model is evaluated against gender and age cohorts using Equal Opportunity Difference (EOD) and Statistical Parity Difference (SPD) metrics at each quarterly review. Features that are direct proxies for protected attributes (e.g. postal district as a proxy for race) have been excluded from the feature set.",
+      "guidance": "If EOD or SPD exceeds 0.05 in any quarterly review, a fairness remediation workstream must be initiated before the next model deployment."
+    },
+    {
+      "risk": "Breach or misalignment with regulatory or organisational standards",
+      "dimension": "Legal & Regulatory",
+      "mitigation": "The model was reviewed by the Legal and Compliance team prior to deployment. An adverse action notice process compliant with MAS Notice 632 is in place. Model outputs are logged and retained for 5 years for regulatory audit purposes."
+    },
+    {
+      "risk": "Inadequate human oversight",
+      "dimension": "Accountability & Governance",
+      "mitigation": "All Medium and High risk tier decisions require credit analyst review before a decision is communicated to the applicant. A daily report flags any automated approvals in the Low tier for spot-check review. An override log tracks analyst departures from model recommendations."
+    }
+  ],
+  "datasets": [
+    {
+      "name": "Retail Loan Performance Dataset",
+      "type": "Structured tabular",
+      "sources": "Internal loan origination system (2020-2025). 842,000 loan accounts with 24-month performance windows.",
+      "preprocessing": "Missing values imputed using median imputation for numeric features. Categorical features one-hot encoded. Outliers beyond the 99.5th percentile capped. Features scaled to [0,1] for tree-based model (scaling retained for API consistency).",
+      "personalData": "Training data contains NRIC-linked records. Records were pseudonymised prior to model training: NRIC replaced with internal customer ID. No names, addresses, or direct contact details are retained in training artifacts.",
+      "representativeness": "Dataset assessed for representation across gender (Male: 54%, Female: 46%) and age bands (21-30: 18%, 31-40: 31%, 41-50: 28%, 51+: 23%). No significant underrepresentation identified. Applicants outside Singapore residency were excluded from training."
+    },
+    {
+      "name": "Credit Bureau Singapore (CBS) Tradeline Data",
+      "type": "Structured tabular - external",
+      "sources": "Retrieved via CBS API at inference time. Includes credit account history, outstanding balances, and repayment status for up to 24 months.",
+      "preprocessing": "Aggregated at applicant level: total outstanding, count of delinquencies in last 12 months, oldest account age. Raw tradeline records are not stored.",
+      "personalData": "CBS data contains personal credit history. Data is retrieved per transaction, processed in memory, and not persisted beyond the current inference request.",
+      "representativeness": "Not assessed independently - CBS data reflects the full Singapore credit bureau population by definition."
+    }
+  ],
+  "evaluation": [
+    {
+      "metric": "Gini Coefficient",
+      "justification": "Standard discriminatory power metric for credit risk models. Measures the model's ability to rank borrowers by default probability.",
+      "result": "0.54 (holdout, Q1 2026)",
+      "methodology": "Evaluated on a random 20% holdout of the 2024-2025 origination cohort. Minimum threshold: 0.45."
+    },
+    {
+      "metric": "Kolmogorov-Smirnov (KS) Statistic",
+      "justification": "Measures separation between the default and non-default score distributions.",
+      "result": "0.38 (holdout, Q1 2026)",
+      "methodology": "Computed on the same holdout as Gini. Minimum threshold: 0.30."
+    },
+    {
+      "metric": "Equal Opportunity Difference (EOD)",
+      "justification": "MindForge Appendix F fairness metric. Measures disparity in true positive rates between demographic groups (gender cohorts).",
+      "result": "0.018 (gender, Q1 2026)",
+      "methodology": "Computed on holdout data segmented by declared gender. Threshold: must remain below 0.05."
+    },
+    {
+      "metric": "Statistical Parity Difference (SPD)",
+      "justification": "MindForge Appendix F fairness metric. Measures disparity in positive outcome rates between demographic groups.",
+      "result": "0.023 (gender, Q1 2026)",
+      "methodology": "Computed on holdout data segmented by declared gender. Threshold: must remain below 0.05."
+    },
+    {
+      "metric": "Input Feature Data Drift (Jensen-Shannon Divergence)",
+      "justification": "MindForge Appendix F stability metric. Monitors distribution shift in input features between training and live production traffic.",
+      "result": "Max JSD: 0.04 across all features (March 2026 monitoring)",
+      "methodology": "Computed monthly against training distribution baseline. Alert threshold: JSD > 0.10 for any feature triggers model review."
+    }
+  ],
+  "cybersecurity": {
+    "dataShared": "At inference time, applicant data (income, employment, debt) and CBS tradeline summary are transmitted to the scoring API over TLS 1.3. No data is retained by the model serving infrastructure beyond the duration of the request. Request and response payloads are logged to an audit trail stored in the FI's internal systems only.",
+    "dataHandling": "FinAI Solutions does not retain customer data from inference requests. Model artifacts (weights, feature schemas) are stored in an encrypted model registry. Access to the model registry is restricted to the MLOps team via role-based access controls.",
+    "securityMetrics": "Penetration test completed February 2026 by [external vendor]. No critical findings. One medium finding (parameter tampering) remediated in v3.2.1. Vulnerability scan run monthly; last scan: 14 March 2026 - no open critical or high CVEs in dependencies.",
+    "attestations": "SOC 2 Type II report available on request (covers model serving infrastructure and data handling). ISO/IEC 27001 certification held by FinAI Solutions (cert. #: ISFS-2024-0032, valid until December 2026)."
+  },
+  "changes": [
+    {
+      "change": "Quarterly model retraining",
+      "frequency": "Quarterly (Jan, Apr, Jul, Oct)",
+      "expectedImpact": "Minor score distribution shifts expected. FI will be notified 4 weeks prior to each deployment. A 2-week parallel run with the existing production model is conducted before full cutover."
+    },
+    {
+      "change": "CBS API version upgrade",
+      "frequency": "As required by CBS (typically annual)",
+      "expectedImpact": "May affect tradeline feature definitions. FinAI Solutions will assess impact and notify FI at least 8 weeks before any CBS-driven model change."
+    },
+    {
+      "change": "Feature set review",
+      "frequency": "Annual",
+      "expectedImpact": "New features may be added or existing features removed based on predictive performance review. Any feature change triggers a full model revalidation cycle before deployment."
+    }
+  ],
+  "standards": [
+    {
+      "standard": "ISO/IEC 42001:2023",
+      "details": "AI Management System certification in progress. Target completion: Q3 2026."
+    },
+    {
+      "standard": "MAS Guidelines on Model Risk Management",
+      "details": "Model validated in accordance with MAS model risk management guidelines. Independent validation completed January 2026."
+    },
+    {
+      "standard": "MindForge AI Risk Management Framework",
+      "details": "This AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026)."
+    },
+    {
+      "standard": "ISO/IEC 27001:2022",
+      "details": "Certification #ISFS-2024-0032. Valid until December 2026.",
+      "link": "https://www.finai.example.com/certifications"
+    }
+  ],
+  "components": {
+    "components": [
+      {
+        "name": "XGBoost scoring model",
+        "version": "3.2.1",
+        "description": "Trained gradient boosting model artifact (.ubj format). Produces PD score and risk tier.",
+        "source": null
+      },
+      {
+        "name": "Pre-processing pipeline",
+        "version": "2.1.0",
+        "description": "Feature validation, imputation, and normalisation layer. Runs before model inference.",
+        "source": null
+      },
+      {
+        "name": "SHAP explainer",
+        "version": "0.46.0",
+        "description": "Computes per-applicant SHAP values for the top 3 contributing features.",
+        "source": "https://github.com/shap/shap"
+      },
+      {
+        "name": "CBS API client",
+        "version": "4.0.1",
+        "description": "Retrieves tradeline data from Credit Bureau Singapore at inference time.",
+        "source": null
+      }
+    ],
+    "dataFlowDescription": "Applicant data is submitted by the FI's loan origination system to the scoring API endpoint (POST /v1/score).\n\nThe pre-processing pipeline validates and normalises inputs, then calls the CBS API client to retrieve tradeline data.\n\nThe combined feature vector is passed to the XGBoost model, which outputs a score and risk tier.\n\nThe SHAP explainer computes feature attributions on the same input.\n\nThe API response returns: score (integer 0-1000), tier (Low/Medium/High), top 3 SHAP features, request ID, and timestamp.\n\nAll request/response pairs are written to the FI's audit log. No data is retained by FinAI Solutions infrastructure."
+  }
+}
