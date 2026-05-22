@@ -1,6 +1,6 @@
 {
   "name": "ai-risk-card",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate clean HTML AI disclosure cards aligned with the MindForge AI Risk Management Framework",
   "keywords": ["ai", "governance", "risk", "mindforge", "mas", "disclosure", "ai-card", "fintech", "compliance"],
   "author": "Widhi Putri",
@@ -16,6 +16,9 @@
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "test": "node bin/cli.js examples/sample-credit-scorer.json --output test-report.html && echo 'Report generated OK'"
+  },
   "engines": {
     "node": ">=16"
   },
