@@ -245,6 +245,113 @@ function renderComponents(c = {}) {
   return listHtml + (flowHtml ? `<div style="margin-top:20px">${flowHtml}</div>` : '');
 }
 
+// SAFR: Safeguards for Agentic Finance at Runtime, MAS white paper v1.0 (July 2026).
+const DISPOSITION_COLORS = {
+  'Auto-Execute': { bg: '#dcfce7', color: '#166534' },
+  'Observe':      { bg: '#e0f2fe', color: '#075985' },
+  'Escalate':     { bg: '#ffedd5', color: '#9a3412' },
+  'Deny':         { bg: '#fee2e2', color: '#991b1b' },
+};
+
+const CALIBRATION_FACTORS = [
+  ['irreversible',        'Irreversible'],
+  ['financiallyMaterial', 'Financially material'],
+  ['customerImpact',      'Customer impact'],
+  ['regulatorySensitive', 'Regulatory sensitive'],
+  ['novel',               'Novel / anomalous'],
+];
+
+function renderDisposition(outcome) {
+  const c = DISPOSITION_COLORS[outcome];
+  return c
+    ? `<span class="disp-pill" style="background:${c.bg};color:${c.color}">${esc(outcome)}</span>`
+    : `<span class="disp-pill">${safe(outcome)}</span>`;
+}
+
+function renderSubhead(title, note) {
+  return `<div class="agent-subhead">${title}${note ? `<span class="agent-subnote">${note}</span>` : ''}</div>`;
+}
+
+function renderAgentic(a = {}) {
+  const id  = a.identity   || {};
+  const m   = a.mandate    || {};
+  const er  = a.escalation || {};
+  const controls = a.controls || [];
+  const actions  = a.actions  || [];
+
+  const permitted = (m.permittedActions || []).length
+    ? m.permittedActions.map(p => `<span class="tag">${esc(p)}</span>`).join('')
+    : `<span class="empty">Not provided</span>`;
+
+  const identityHtml = `<div class="info-grid">
+    ${renderRow('Integration Pattern', safe(a.integration))}
+    ${renderRow('Agent Registry', safe(id.registry))}
+    ${renderRow('Registered Agent ID', id.agentId ? `<code class="mono-val">${esc(id.agentId)}</code>` : `<span class="empty">Not provided</span>`)}
+    ${renderRow('Identity Verification', safe(id.verification))}
+  </div>`;
+
+  const mandateHtml = `<div class="info-grid">
+    ${renderRow('Principal Authority', safe(m.principal))}
+    ${renderRow('Permitted Action Types', permitted)}
+    ${renderRow('Exposure Limits', safe(m.exposureLimits))}
+    ${renderRow('Rate Limits', safe(m.rateLimits))}
+    ${renderRow('Validity Period', safe(m.validity))}
+    ${renderRow('Update / Revocation', safe(m.revocation))}
+  </div>`;
+
+  const controlsHtml = controls.length
+    ? `<div class="control-list">` + controls.map(c => `
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">${esc(c.category || 'Control')}</span>
+          ${c.source ? `<span class="tag">${esc(c.source)}</span>` : ''}
+        </div>
+        <div class="control-rule">${nl2br(c.rule)}</div>
+      </div>`).join('') + `</div>`
+    : `<p class="empty-state">No controls listed.</p>`;
+
+  const actionsHtml = actions.length
+    ? `<div class="action-table-wrap"><table class="action-table">
+      <thead><tr><th>Action</th><th>Disposition</th><th>Risk factors</th><th>Rationale</th></tr></thead>
+      <tbody>${actions.map(ac => {
+        const factors = CALIBRATION_FACTORS.filter(([k]) => ac[k]).map(([, l]) => `<span class="factor-chip">${l}</span>`).join('');
+        return `<tr>
+          <td class="action-name">${esc(ac.action || '')}</td>
+          <td>${renderDisposition(ac.outcome)}</td>
+          <td>${factors || '<span class="empty">None flagged</span>'}</td>
+          <td class="action-why">${ac.rationale ? nl2br(ac.rationale) : '<span class="empty">Not provided</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`
+    : `<p class="empty-state">No action dispositions listed.</p>`;
+
+  const timeout = er.timeout
+    ? `${esc(er.timeout)}${er.timeoutDefault ? ` <span class="tag">then ${esc(er.timeoutDefault)}</span>` : ''}`
+    : `<span class="empty">Not provided</span>`;
+
+  const escalationHtml = `<div class="info-grid">
+    ${renderRow('Reviewer', safe(er.reviewer))}
+    ${renderRow('Reviewer Authority', safe(er.reviewerAuthority))}
+    ${renderRow('Review Timeout', timeout)}
+    ${renderRow('Expected Volume vs Capacity', safe(er.volume))}
+    ${renderRow('Coverage Hours', safe(er.coverage))}
+  </div>`;
+
+  return renderSubhead('Agent Identity', 'Who is acting, verified before any control is checked')
+    + identityHtml
+    + renderSubhead('Mandate', 'The authority delegated to the agent; the agent cannot extend it')
+    + mandateHtml
+    + renderSubhead('Controls Repository', 'The rules each proposed action is checked against')
+    + controlsHtml
+    + renderSubhead('Action Dispositions', 'What happens to each action type: Auto-Execute, Observe, Escalate or Deny')
+    + actionsHtml
+    + renderSubhead('Human Reviewer Escalation', 'Escalation must be substantive, not nominal')
+    + escalationHtml
+    + renderSubhead('Governance Envelope and Audit Log')
+    + renderProseBlock('Governance Envelope', nl2br(a.envelope))
+    + renderProseBlock('Audit Log', nl2br(a.auditLog));
+}
+
 function generateCard(data) {
   const g          = data.general   || {};
   const generated  = formatLocalTimestamp();
@@ -268,6 +375,7 @@ function generateCard(data) {
     ['changes',       'Changes'],
     ['standards',     'Standards'],
   ];
+  if (data.agentic)    navItems.push(['agentic', 'Agentic Safeguards']);
   if (data.components) navItems.push(['components', 'Components']);
 
   const navHtml = navItems
@@ -425,6 +533,26 @@ details.eval-method-details[open] .expand-icon-sm{transform:rotate(90deg)}
 .component-name{font-weight:600;font-size:13px;color:var(--text-primary)}
 .component-desc{font-size:12px;color:var(--text-muted);line-height:1.6}
 
+/* ── Agentic safeguards (SAFR) ── */
+.agent-subhead{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;margin:26px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--navy-border);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.agent-subhead:first-child{margin-top:0}
+.agent-subnote{font-size:11px;font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0}
+.mono-val{font-family:'Consolas','Monaco',monospace;font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px;word-break:break-all}
+.control-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.control-item{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--navy-subtle)}
+.control-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.control-cat{font-weight:700;font-size:13px;color:var(--navy)}
+.control-rule{font-size:12.5px;color:var(--text-secondary);line-height:1.6}
+.action-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+.action-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:620px}
+.action-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);background:var(--navy-subtle);padding:10px 14px;border-bottom:1px solid var(--border)}
+.action-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-secondary);line-height:1.55}
+.action-table tr:last-child td{border-bottom:none}
+.action-name{font-weight:600;color:var(--text-primary)!important;width:24%}
+.action-why{width:40%}
+.disp-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.factor-chip{display:inline-block;font-size:10.5px;font-weight:600;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;margin:0 4px 4px 0;white-space:nowrap}
+
 /* ── Misc ── */
 .empty{color:var(--text-muted);font-style:italic;font-size:12px}
 .empty-state{color:var(--text-muted);font-style:italic;font-size:13px;padding:8px 0}
@@ -438,7 +566,7 @@ footer a:hover{color:#fff}
 @media(max-width:768px){
   header{padding:22px 20px}
   .info-label{width:130px}
-  .eval-grid{grid-template-columns:1fr}
+  .eval-grid,.control-list{grid-template-columns:1fr}
   .nav-link{padding:12px 10px;font-size:11px}
   .section-body{padding:16px}
   .container{padding:20px 16px 40px}
@@ -465,6 +593,7 @@ footer a:hover{color:#fff}
     <div class="header-subtitle">Generated for ${esc(g.name || 'Unnamed System')}</div>
     <div class="header-meta">
       ${risks.length ? `<span class="header-meta-item"><span class="header-meta-label">Known Risks</span><span class="header-meta-value">${risks.length}</span></span>` : ''}
+      ${data.agentic && (data.agentic.actions || []).length ? `<span class="header-meta-item"><span class="header-meta-label">Agent Action Types</span><span class="header-meta-value">${data.agentic.actions.length}</span></span>` : ''}
       <span class="header-meta-item"><span class="header-meta-label">Generated</span><span class="header-meta-value">${esc(generated)}</span></span>
     </div>
   </div>
@@ -517,6 +646,11 @@ ${renderSection('standards', 'Standards and Certifications', 'ST',
   standards.length
 )}
 
+${data.agentic ? renderSection('agentic', 'Agentic Runtime Safeguards (SAFR)', 'AG',
+  renderAgentic(data.agentic),
+  (data.agentic.actions || []).length || null
+) : ''}
+
 ${data.components ? renderSection('components', 'Components and Architecture', 'CA',
   renderComponents(data.components),
   (data.components.components || []).length || null
@@ -526,7 +660,7 @@ ${data.components ? renderSection('components', 'Components and Architecture', '
 
 <footer>
   <span class="footer-brand">ai-risk-card</span>
-  <span>Aligned with the <a href="https://www.mas.gov.sg/news/media-releases/2026/mas-partners-industry-to-develop-ai-risk-management-toolkit-for-the-financial-sector" target="_blank">MindForge AI Risk Management Framework</a> &bull; Appendix E &bull; January 2026</span>
+  <span>Aligned with the <a href="https://www.mas.gov.sg/news/media-releases/2026/mas-partners-industry-to-develop-ai-risk-management-toolkit-for-the-financial-sector" target="_blank">MindForge AI Risk Management Framework</a> &bull; Appendix E &bull; January 2026${data.agentic ? ` &bull; <a href="https://www.mas.gov.sg/publications/monographs-or-information-paper/2026/safeguards-for-agentic-finance-at-runtime" target="_blank">SAFR</a> v1.0, July 2026` : ''}</span>
 </footer>
 
 </body>
