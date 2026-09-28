@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Disclosure Card Report - Supplier Payments Agent</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%230b1f42' width='24' height='24' rx='4'/><path fill='%23fff' d='M6 7h12v2H6zm0 4h12v2H6zm0 4h8v2H6z'/></svg>">
+<style>
+:root{
+  --navy:#0b1f42;
+  --navy-mid:#1a3a6b;
+  --navy-light:#2a52a0;
+  --navy-subtle:#eef3fb;
+  --navy-border:#d5e0f5;
+  --body-bg:#edf1f9;
+  --card-bg:#ffffff;
+  --text-primary:#0f172a;
+  --text-secondary:#475569;
+  --text-muted:#94a3b8;
+  --border:#e2e8f0;
+  --radius:12px;
+  --shadow:0 2px 8px rgba(11,31,66,.09),0 0 0 1px rgba(11,31,66,.04);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6;color:var(--text-primary);background:var(--body-bg)}
+a{color:var(--navy-light);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.header-inner{position:relative;padding:36px 20px 36px;text-align:left}
+header h1{font-size:36px;font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px}
+.header-subtitle{font-size:20px;font-weight:500;opacity:.75;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.header-type-badge{font-size:11px;font-weight:700;padding:3px 11px;border-radius:4px;letter-spacing:.4px;vertical-align:middle;border-left:3px solid transparent}
+.header-meta{display:flex;gap:0;flex-wrap:wrap;margin-top:12px}
+.header-meta-item{font-size:12px;opacity:.65;padding-right:20px;margin-right:20px;border-right:1px solid rgba(255,255,255,.2);line-height:2}
+.header-meta-item:last-child{border-right:none}
+.header-meta-label{opacity:.7;margin-right:4px}
+.header-meta-value{font-weight:600}
+.framework-tag{margin-top:10px;font-size:12px;opacity:.5;letter-spacing:.2px}
+
+/* ── Nav ── */
+.nav-bar{background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(11,31,66,.06)}
+.nav-inner{padding:0 32px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-link{font-size:12px;font-weight:600;color:var(--text-muted);padding:13px 0;flex:1;text-align:center;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-link:hover{color:var(--navy);border-bottom-color:var(--navy-border);text-decoration:none}
+
+/* ── Layout ── */
+.container{padding:28px 32px 48px}
+
+/* ── Cards ── */
+.card-section{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--navy-subtle)}
+.section-icon{width:32px;height:32px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px;flex-shrink:0;line-height:1;font-family:'Consolas','Monaco',monospace}
+.section-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;flex:1}
+.section-count{font-size:11px;font-weight:700;color:var(--navy-light);background:var(--navy-border);padding:2px 9px;border-radius:20px}
+.section-body{padding:22px 24px}
+
+/* ── Info rows ── */
+.info-grid{display:flex;flex-direction:column}
+.info-row{display:flex;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;width:260px;flex-shrink:0}
+.info-value{font-size:13px;color:var(--text-primary);flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ── Prose blocks ── */
+.prose-block{margin-bottom:18px}
+.prose-block:last-child{margin-bottom:0}
+.prose-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
+.prose-content{font-size:13px;color:var(--text-secondary);line-height:1.75;background:var(--navy-subtle);border-left:3px solid var(--navy-border);border-radius:0 8px 8px 0;padding:12px 16px}
+
+/* ── Tags ── */
+.tag{font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tag-teal{background:#e0f2f1;color:#00695c}
+.type-pill{font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;white-space:nowrap;border-left:3px solid transparent}
+.dim-pill{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+
+/* ── Expand icon ── */
+.expand-icon{font-size:9px;color:var(--text-muted);flex-shrink:0;transition:transform .15s;display:inline-block}
+
+/* ── Risks ── */
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk-item{border-left:3px solid #cbd5e1;border-radius:0 10px 10px 0;overflow:hidden;border:1px solid var(--border);border-left-width:3px}
+.risk-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:filter .1s}
+.risk-summary::-webkit-details-marker{display:none}
+.risk-summary:hover{filter:brightness(.97)}
+details.risk-item[open] .expand-icon{transform:rotate(90deg)}
+.risk-name{font-weight:600;font-size:13px;flex:1;color:var(--text-primary)}
+.risk-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Datasets ── */
+.dataset-list{display:flex;flex-direction:column;gap:8px}
+.dataset-item{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dataset-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;background:var(--navy-subtle)}
+.dataset-summary::-webkit-details-marker{display:none}
+.dataset-summary:hover{background:var(--navy-border)}
+details.dataset-item[open] .expand-icon{transform:rotate(90deg)}
+.dataset-summary-main{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap}
+.dataset-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.dataset-body{padding:16px 18px;border-top:1px solid var(--border)}
+
+/* ── Evaluation cards ── */
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.eval-card{border:1px solid var(--border);border-radius:10px;padding:18px;background:var(--navy-subtle);display:flex;flex-direction:column;gap:10px}
+.eval-metric-name{font-weight:700;font-size:13px;color:var(--navy);line-height:1.4}
+.eval-justification{font-size:12px;color:var(--text-muted);line-height:1.6;border-top:1px solid var(--border);padding-top:10px}
+.eval-result-row{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+.eval-result-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
+.eval-result{font-family:'Consolas','Monaco',monospace;font-size:12px;color:#166534;font-weight:700;background:#dcfce7;padding:2px 10px;border-radius:6px}
+.eval-method-details{margin-top:4px}
+.eval-method-toggle{cursor:pointer;list-style:none;user-select:none;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--navy-light)}
+.eval-method-toggle::-webkit-details-marker{display:none}
+.expand-icon-sm{font-size:8px;transition:transform .15s;display:inline-block}
+details.eval-method-details[open] .expand-icon-sm{transform:rotate(90deg)}
+.eval-method-body{margin-top:8px;font-size:12px;color:var(--text-muted);line-height:1.6;padding:10px 12px;background:var(--card-bg);border-radius:6px;border:1px solid var(--border)}
+
+/* ── Changes ── */
+.changes-list{display:flex;flex-direction:column;gap:10px}
+.change-card{border:1px solid var(--border);border-radius:10px;padding:16px 20px;background:var(--navy-subtle)}
+.change-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.change-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.change-freq-badge{font-size:11px;font-weight:700;color:#9a3412;background:#ffedd5;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.change-impact{font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+/* ── Standards ── */
+.standards-list{display:flex;flex-direction:column;gap:0}
+.standard-item{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.standard-item:last-child{border-bottom:none}
+.standard-num{font-size:11px;font-weight:700;color:var(--card-bg);background:var(--navy);width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.standard-main{display:flex;flex-direction:column;gap:3px;flex:1}
+.standard-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.standard-detail{font-size:12px;color:var(--text-muted);line-height:1.5}
+.standard-link{font-size:11px;font-weight:700;color:var(--navy);background:var(--navy-border);padding:3px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.standard-link:hover{background:var(--navy-light);color:#fff;text-decoration:none}
+
+/* ── Components ── */
+.component-list{display:flex;flex-direction:column;gap:0}
+.component-item{display:flex;flex-direction:column;gap:5px;padding:14px 0;border-bottom:1px solid var(--border)}
+.component-item:last-child{border-bottom:none}
+.component-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.component-name{font-weight:600;font-size:13px;color:var(--text-primary)}
+.component-desc{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+/* ── Agentic safeguards (SAFR) ── */
+.agent-subhead{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;margin:26px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--navy-border);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.agent-subhead:first-child{margin-top:0}
+.agent-subnote{font-size:11px;font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0}
+.mono-val{font-family:'Consolas','Monaco',monospace;font-size:12px;background:#f1f5f9;padding:1px 6px;border-radius:4px;word-break:break-all}
+.control-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.control-item{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--navy-subtle)}
+.control-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.control-cat{font-weight:700;font-size:13px;color:var(--navy)}
+.control-rule{font-size:12.5px;color:var(--text-secondary);line-height:1.6}
+.action-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+.action-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:620px}
+.action-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);background:var(--navy-subtle);padding:10px 14px;border-bottom:1px solid var(--border)}
+.action-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-secondary);line-height:1.55}
+.action-table tr:last-child td{border-bottom:none}
+.action-name{font-weight:600;color:var(--text-primary)!important;width:24%}
+.action-why{width:40%}
+.disp-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.factor-chip{display:inline-block;font-size:10.5px;font-weight:600;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;margin:0 4px 4px 0;white-space:nowrap}
+
+/* ── Misc ── */
+.empty{color:var(--text-muted);font-style:italic;font-size:12px}
+.empty-state{color:var(--text-muted);font-style:italic;font-size:13px;padding:8px 0}
+
+footer{background:var(--navy);color:rgba(255,255,255,.4);margin-top:8px;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+footer a:hover{color:#fff}
+.footer-brand{font-weight:700;color:rgba(255,255,255,.7);font-size:11px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  header{padding:22px 20px}
+  .info-label{width:130px}
+  .eval-grid,.control-list{grid-template-columns:1fr}
+  .nav-link{padding:12px 10px;font-size:11px}
+  .section-body{padding:16px}
+  .container{padding:20px 16px 40px}
+}
+
+/* ── Print ── */
+@media print{
+  body{background:#fff}
+  .nav-bar{display:none}
+  .container{padding:16px 0 0;max-width:100%}
+  header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-section{box-shadow:none;border:1px solid var(--border);break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details.risk-item,details.dataset-item,details.eval-method-details{overflow:visible}
+  .eval-grid{grid-template-columns:1fr 1fr}
+  @page{margin:1.2cm;size:A4}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>AI Disclosure Card Report</h1>
+    <div class="header-subtitle">Generated for Supplier Payments Agent</div>
+    <div class="header-meta">
+      <span class="header-meta-item"><span class="header-meta-label">Known Risks</span><span class="header-meta-value">3</span></span>
+      <span class="header-meta-item"><span class="header-meta-label">Agent Action Types</span><span class="header-meta-value">6</span></span>
+      <span class="header-meta-item"><span class="header-meta-label">Generated</span><span class="header-meta-value">Tuesday, 29 September 2026 00:16 (UTC+07:00)</span></span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner"><a class="nav-link" href="#general">General</a><a class="nav-link" href="#purpose">Purpose</a><a class="nav-link" href="#techniques">Techniques</a><a class="nav-link" href="#risks">Risks</a><a class="nav-link" href="#datasets">Datasets</a><a class="nav-link" href="#evaluation">Evaluation</a><a class="nav-link" href="#cybersecurity">Cybersecurity</a><a class="nav-link" href="#changes">Changes</a><a class="nav-link" href="#standards">Standards</a><a class="nav-link" href="#agentic">Agentic Safeguards</a></div>
+</nav>
+
+<div class="container">
+
+
+  <section class="card-section" id="general">
+    <div class="section-header">
+      <span class="section-icon">GI</span>
+      <h2 class="section-title">General Information</h2>
+      
+    </div>
+    <div class="section-body"><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">System Name</span>
+    <span class="info-value">Supplier Payments Agent</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">AI Type</span>
+    <span class="info-value"><span class="type-pill" style="background:#fff3e0;color:#e65100;border-left-color:#e65100">Agentic</span></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Version</span>
+    <span class="info-value">1.0.2</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System License</span>
+    <span class="info-value">Proprietary - licensed under Master Services Agreement</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">System Last Updated</span>
+    <span class="info-value">Tuesday, 15 September 2026</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Provider / Developer</span>
+    <span class="info-value">LedgerFlow AI Pte. Ltd.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Contact</span>
+    <span class="info-value"><a href="mailto:ai-governance@ledgerflow.example.com">ai-governance@ledgerflow.example.com</a></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Input / Output Modalities</span>
+    <span class="info-value"><span class="tag">Text</span><span class="tag">Structured data</span></span>
+  </div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="purpose">
+    <div class="section-header">
+      <span class="section-icon">PU</span>
+      <h2 class="section-title">Purpose and Usage</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Intended Uses, Users and Domains</div>
+    <div class="prose-content">An AI agent used by the FI's corporate banking operations team to prepare and initiate outbound supplier payments on behalf of corporate clients who have delegated this task. The agent reads approved invoices from the client's accounts payable feed, matches them against purchase orders, checks the payee against the client's approved supplier list, and proposes a payment instruction.<br><br>Not intended for: payments to new or unapproved payees, cross-border payments to sanctioned or high-risk jurisdictions, payroll, or any payment the client has not delegated in its mandate.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Usage Guidance</div>
+    <div class="prose-content">The agent may only act within a signed client mandate. Every proposed payment is evaluated by the FI's runtime governance layer before execution. Operations staff must review every escalated payment within the review window. The agent must never be granted standing authority to change payee bank details.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="techniques">
+    <div class="section-header">
+      <span class="section-icon">TD</span>
+      <h2 class="section-title">Techniques and Development</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Main AI Techniques</div>
+    <div class="prose-content">Tool-using large language model agent. The model plans each task, calls FI-provided tools (invoice retrieval, purchase order lookup, supplier registry lookup, payment proposal) and emits a governance envelope for every proposed action. The model has no direct access to payment rails.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Architecture and Components</div>
+    <div class="prose-content">1. Planning layer: third-party LLM orchestrates the task and calls tools.<br>2. Tool layer: FI-owned APIs expose read access to invoices, purchase orders and the supplier registry, and a single write tool that submits a payment proposal.<br>3. Governance layer: every write is packaged as a governance envelope and evaluated by the FI's SAFR validator before it can reach the payments engine.<br>4. Execution layer: approved instructions are passed to the FI's existing payments engine and settle over the normal rails.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">External AI Service Calls</div>
+    <div class="prose-content">LedgerFlow managed LLM API for planning and tool selection. Invoice and payment data sent to the API is limited to the fields needed for matching; client account numbers are tokenised.</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="risks">
+    <div class="section-header">
+      <span class="section-icon">RK</span>
+      <h2 class="section-title">Risks</h2>
+      <span class="section-count">3</span>
+    </div>
+    <div class="section-body"><div class="risk-list">
+    <details class="risk-item" style="border-left-color:#5c6bc0;background:#f5f6ff" open>
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Payment above delegated authority</span>
+        <span class="dim-pill" style="background:#e8eaf6;color:#3949ab">Accountability &amp; Governance</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Per-payment and daily aggregate exposure limits are enforced by the governance layer, not by the agent. Payments above the autonomous threshold are escalated to a human reviewer; payments above the mandate ceiling are denied.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Exposure limits must be set to match the client's existing delegated authority matrix and reviewed whenever the mandate changes.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#8e24aa;background:#fdf4ff" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Prompt injection via invoice content</span>
+        <span class="dim-pill" style="background:#f3e5f5;color:#6a1b9a">Cyber &amp; Data Security</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Invoice text is treated as untrusted data. The governance envelope is authenticated against the original invoice record, so an envelope whose payee or amount departs from the source invoice is denied regardless of what the agent reports.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">Any new invoice source must be onboarded through the envelope integrity check before the agent can read it.</div>
+  </div>
+      </div>
+    </details>
+    <details class="risk-item" style="border-left-color:#43a047;background:#f3fbf4" >
+      <summary class="risk-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="risk-name">Runaway or repeated actions</span>
+        <span class="dim-pill" style="background:#e8f5e9;color:#2e7d32">Robustness &amp; Stability</span>
+      </summary>
+      <div class="risk-body">
+        
+  <div class="prose-block">
+    <div class="prose-label">Mitigation Strategy</div>
+    <div class="prose-content">Rate limits cap the number of payment proposals per client per hour. Each step of a multi-step task is evaluated independently, so an approval at one step carries no authority into the next.</div>
+  </div>
+        
+  <div class="prose-block">
+    <div class="prose-label">Appropriate Use Guidance</div>
+    <div class="prose-content">A rate-limit breach suspends the agent for that client until operations review the activity log.</div>
+  </div>
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="datasets">
+    <div class="section-header">
+      <span class="section-icon">DS</span>
+      <h2 class="section-title">Datasets</h2>
+      <span class="section-count">1</span>
+    </div>
+    <div class="section-body"><div class="dataset-list">
+    <details class="dataset-item" open>
+      <summary class="dataset-summary">
+        <span class="expand-icon">&#9654;</span>
+        <div class="dataset-summary-main">
+          <span class="dataset-name">Client accounts payable feed</span>
+          <span class="tag tag-teal">Structured, client-provided</span>
+        </div>
+      </summary>
+      <div class="dataset-body">
+        <div class="info-grid">
+          
+  <div class="info-row">
+    <span class="info-label">Sources</span>
+    <span class="info-value">Approved invoices and purchase orders exported daily from each client's ERP system over an authenticated SFTP channel.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Pre-processing</span>
+    <span class="info-value">Schema validation, duplicate invoice detection and currency normalisation before the agent can read a record.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Personal / Private Data</span>
+    <span class="info-value">Supplier contact names may appear. Client bank account numbers are tokenised before they reach the model.</span>
+  </div>
+          
+  <div class="info-row">
+    <span class="info-label">Representativeness</span>
+    <span class="info-value">Not used for training. Covers every invoice the client submits for payment.</span>
+  </div>
+        </div>
+      </div>
+    </details></div></div>
+  </section>
+
+
+  <section class="card-section" id="evaluation">
+    <div class="section-header">
+      <span class="section-icon">EV</span>
+      <h2 class="section-title">Evaluation and Testing</h2>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body"><div class="eval-grid">
+    <div class="eval-card">
+      <div class="eval-metric-name">Invoice-to-payment match accuracy</div>
+      <div class="eval-justification">Measures whether the agent proposes the correct payee and amount for each approved invoice.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">99.6% (August 2026 evaluation)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">2,000 historical invoices replayed in a sandbox. Each proposal compared with the payment a human operator made for the same invoice.</div>
+      </details>
+    </div>
+    <div class="eval-card">
+      <div class="eval-metric-name">Escalation rate</div>
+      <div class="eval-justification">Operational metric. Shows how much human review the agent generates, so escalation stays within reviewer capacity.</div>
+      <div class="eval-result-row">
+        <span class="eval-result-label">Result</span>
+        <span class="eval-result">6.8% of proposals (August 2026 pilot)</span>
+      </div>
+      
+      <details class="eval-method-details">
+        <summary class="eval-method-toggle">
+          <span class="expand-icon-sm">&#9654;</span> Methodology
+        </summary>
+        <div class="eval-method-body">Escalated proposals divided by total proposals across the pilot clients. Alert threshold: above 12% triggers a threshold review.</div>
+      </details>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="cybersecurity">
+    <div class="section-header">
+      <span class="section-icon">CS</span>
+      <h2 class="section-title">Cybersecurity and Data Protection</h2>
+      
+    </div>
+    <div class="section-body">
+  <div class="prose-block">
+    <div class="prose-label">Data Shared with Provider</div>
+    <div class="prose-content">Tokenised invoice and purchase order fields, and the tool call results needed for the task. No authentication credentials or raw account numbers.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Data Handling by Provider</div>
+    <div class="prose-content">LedgerFlow retains no prompts or completions after the request. Data residency: Singapore region only.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Cybersecurity Metrics and Results</div>
+    <div class="prose-content">Red-team exercise (July 2026) covering prompt injection through invoice fields and tool output tampering. All tampered envelopes were denied by the integrity check.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Security and Data Protection Attestations</div>
+    <div class="prose-content">LedgerFlow holds SOC 2 Type II (last audit: June 2026).</div>
+  </div></div>
+  </section>
+
+
+  <section class="card-section" id="changes">
+    <div class="section-header">
+      <span class="section-icon">CH</span>
+      <h2 class="section-title">Pre-Determined Changes</h2>
+      <span class="section-count">1</span>
+    </div>
+    <div class="section-body"><div class="changes-list">
+    <div class="change-card">
+      <div class="change-card-top">
+        <span class="change-name">Exposure and rate limit recalibration</span>
+        <span class="change-freq-badge">Quarterly, or when a client mandate changes</span>
+      </div>
+      <div class="change-impact">May change the share of payments that auto-execute versus escalate. Every change is approved by Operational Risk before deployment.</div>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="standards">
+    <div class="section-header">
+      <span class="section-icon">ST</span>
+      <h2 class="section-title">Standards and Certifications</h2>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body"><div class="standards-list">
+    <div class="standard-item">
+      <span class="standard-num">01</span>
+      <div class="standard-main">
+        <span class="standard-name">MindForge AI Risk Management Framework</span>
+        <span class="standard-detail">AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026).</span>
+      </div>
+      
+    </div>
+    <div class="standard-item">
+      <span class="standard-num">02</span>
+      <div class="standard-main">
+        <span class="standard-name">Safeguards for Agentic Finance at Runtime (SAFR)</span>
+        <span class="standard-detail">Runtime governance designed against the SAFR reference model, white paper v1.0 (July 2026).</span>
+      </div>
+      <a class="standard-link" href="https://www.mas.gov.sg/publications/monographs-or-information-paper/2026/safeguards-for-agentic-finance-at-runtime" target="_blank">View &#8599;</a>
+    </div></div></div>
+  </section>
+
+
+  <section class="card-section" id="agentic">
+    <div class="section-header">
+      <span class="section-icon">AG</span>
+      <h2 class="section-title">Agentic Runtime Safeguards (SAFR)</h2>
+      <span class="section-count">6</span>
+    </div>
+    <div class="section-body"><div class="agent-subhead">Agent Identity<span class="agent-subnote">Who is acting, verified before any control is checked</span></div><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">Integration Pattern</span>
+    <span class="info-value">Native: the agent emits a governance envelope before every proposed action</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Agent Registry</span>
+    <span class="info-value">FI internal agent registry (closed-loop, single institution)</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Registered Agent ID</span>
+    <span class="info-value"><code class="mono-val">agent://fi-sg/corp-ops/supplier-payments/v1</code></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Identity Verification</span>
+    <span class="info-value">Signed service credential checked against the registry entry before any control is evaluated. An envelope that fails the check is rejected and logged.</span>
+  </div>
+  </div><div class="agent-subhead">Mandate<span class="agent-subnote">The authority delegated to the agent; the agent cannot extend it</span></div><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">Principal Authority</span>
+    <span class="info-value">Corporate client, under the payment delegation schedule signed by its authorised signatories. Only the client's signatories can widen or revoke it.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Permitted Action Types</span>
+    <span class="info-value"><span class="tag">Read invoice</span><span class="tag">Read purchase order</span><span class="tag">Look up supplier</span><span class="tag">Propose supplier payment</span></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Exposure Limits</span>
+    <span class="info-value">Up to SGD 20,000 per payment executes autonomously; SGD 20,000 to 250,000 escalates; above SGD 250,000 or above SGD 1,000,000 per day is denied.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Rate Limits</span>
+    <span class="info-value">Maximum 60 payment proposals per client per hour</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Validity Period</span>
+    <span class="info-value">12 months from signature, renewed at the client's annual review</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Update / Revocation</span>
+    <span class="info-value">Client signatories via the corporate banking portal; takes effect for the next proposed action</span>
+  </div>
+  </div><div class="agent-subhead">Controls Repository<span class="agent-subnote">The rules each proposed action is checked against</span></div><div class="control-list">
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">Authorisation</span>
+          <span class="tag">User mandate</span>
+        </div>
+        <div class="control-rule">Agent may act only for clients with an active delegation schedule and only for the permitted action types listed there.</div>
+      </div>
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">Exposure Limits</span>
+          <span class="tag">Product rules</span>
+        </div>
+        <div class="control-rule">Per-payment and daily aggregate thresholds as set in the mandate, aligned with the client's delegated authority matrix.</div>
+      </div>
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">Rate Limits</span>
+          <span class="tag">Organisational policy</span>
+        </div>
+        <div class="control-rule">60 proposals per client per hour. A breach suspends the agent for that client pending review.</div>
+      </div>
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">Evidence Quality</span>
+          <span class="tag">Organisational policy</span>
+        </div>
+        <div class="control-rule">Invoice, purchase order and approved-supplier match must all be present. Agent-stated confidence below 0.90 escalates regardless of value.</div>
+      </div>
+      <div class="control-item">
+        <div class="control-top">
+          <span class="control-cat">Sanctions screening</span>
+          <span class="tag">Regulatory requirement</span>
+        </div>
+        <div class="control-rule">Payee screened against sanctions lists at proposal time. Any potential match is denied and routed to Compliance.</div>
+      </div></div><div class="agent-subhead">Action Dispositions<span class="agent-subnote">What happens to each action type: Auto-Execute, Observe, Escalate or Deny</span></div><div class="action-table-wrap"><table class="action-table">
+      <thead><tr><th>Action</th><th>Disposition</th><th>Risk factors</th><th>Rationale</th></tr></thead>
+      <tbody><tr>
+          <td class="action-name">Read invoice or purchase order</td>
+          <td><span class="disp-pill" style="background:#dcfce7;color:#166534">Auto-Execute</span></td>
+          <td><span class="empty">None flagged</span></td>
+          <td class="action-why">Read-only and inside the mandate.</td>
+        </tr><tr>
+          <td class="action-name">Propose payment to approved supplier, up to SGD 20,000</td>
+          <td><span class="disp-pill" style="background:#dcfce7;color:#166534">Auto-Execute</span></td>
+          <td><span class="empty">None flagged</span></td>
+          <td class="action-why">Within scope and below the autonomous threshold.</td>
+        </tr><tr>
+          <td class="action-name">Payment to a supplier first paid within the last 30 days</td>
+          <td><span class="disp-pill" style="background:#e0f2fe;color:#075985">Observe</span></td>
+          <td><span class="factor-chip">Novel / anomalous</span></td>
+          <td class="action-why">Permitted, but new payee relationships are logged for weekly review.</td>
+        </tr><tr>
+          <td class="action-name">Propose payment of SGD 20,000 to 250,000</td>
+          <td><span class="disp-pill" style="background:#ffedd5;color:#9a3412">Escalate</span></td>
+          <td><span class="factor-chip">Irreversible</span><span class="factor-chip">Financially material</span><span class="factor-chip">Customer impact</span></td>
+          <td class="action-why">Above the autonomous threshold; held for an operations reviewer.</td>
+        </tr><tr>
+          <td class="action-name">Change payee bank details</td>
+          <td><span class="disp-pill" style="background:#fee2e2;color:#991b1b">Deny</span></td>
+          <td><span class="factor-chip">Irreversible</span><span class="factor-chip">Customer impact</span><span class="factor-chip">Regulatory sensitive</span></td>
+          <td class="action-why">Outside the mandate. A common fraud vector; must be done by the client through its own channel.</td>
+        </tr><tr>
+          <td class="action-name">Payment to a potential sanctions match</td>
+          <td><span class="disp-pill" style="background:#fee2e2;color:#991b1b">Deny</span></td>
+          <td><span class="factor-chip">Irreversible</span><span class="factor-chip">Regulatory sensitive</span></td>
+          <td class="action-why">Hard regulatory constraint. Routed to Compliance with the reason recorded.</td>
+        </tr></tbody>
+    </table></div><div class="agent-subhead">Human Reviewer Escalation<span class="agent-subnote">Escalation must be substantive, not nominal</span></div><div class="info-grid">
+    
+  <div class="info-row">
+    <span class="info-label">Reviewer</span>
+    <span class="info-value">Corporate banking payments operations team (maker-checker)</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Reviewer Authority</span>
+    <span class="info-value">Can approve, amend the amount downward, or decline. Decisions carry the same weight as an operator-initiated payment.</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Review Timeout</span>
+    <span class="info-value">2 business hours <span class="tag">then block and notify the client</span></span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Expected Volume vs Capacity</span>
+    <span class="info-value">About 40 escalations a day at pilot volume against a team capacity of about 150</span>
+  </div>
+    
+  <div class="info-row">
+    <span class="info-label">Coverage Hours</span>
+    <span class="info-value">Singapore business hours, 08:00 to 20:00. Outside those hours escalations wait and the timeout pauses.</span>
+  </div>
+  </div><div class="agent-subhead">Governance Envelope and Audit Log</div>
+  <div class="prose-block">
+    <div class="prose-label">Governance Envelope</div>
+    <div class="prose-content">Each proposed action carries the action type and parameters (payee, amount, currency, value date), the action trace (tool calls made, invoice and purchase order retrieved, supplier registry result, checks performed) and context metadata (agent identity, mandate reference, account state, operative policy). The envelope is authenticated against the source invoice record, not taken on the agent's word.</div>
+  </div>
+  <div class="prose-block">
+    <div class="prose-label">Audit Log</div>
+    <div class="prose-content">Append-only, tamper-evident log in the FI's compliance data store. Each entry records the envelope as submitted, the mandate checked, the disposition, the rules applied, the basis for the outcome and the time taken at each stage. Retained for 7 years and available to transaction monitoring and AML systems.</div>
+  </div></div>
+  </section>
+
+
+
+</div>
+
+<footer>
+  <span class="footer-brand">ai-risk-card</span>
+  <span>Aligned with the <a href="https://www.mas.gov.sg/news/media-releases/2026/mas-partners-industry-to-develop-ai-risk-management-toolkit-for-the-financial-sector" target="_blank">MindForge AI Risk Management Framework</a> &bull; Appendix E &bull; January 2026 &bull; <a href="https://www.mas.gov.sg/publications/monographs-or-information-paper/2026/safeguards-for-agentic-finance-at-runtime" target="_blank">SAFR</a> v1.0, July 2026</span>
+</footer>
+
+</body>
+</html>

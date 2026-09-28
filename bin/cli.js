@@ -50,6 +50,10 @@ try {
   process.exit(1);
 }
 
+if (data.aiType === 'Agentic' && !data.agentic) {
+  console.warn('Warning: aiType is "Agentic" but no "agentic" block was provided, so the card has no runtime safeguards section (SAFR). See examples/sample-payments-agent.json.');
+}
+
 if (!outputFile) {
   const slug = (data.general?.name || 'ai-card')
     .toLowerCase()

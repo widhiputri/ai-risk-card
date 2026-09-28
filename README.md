@@ -4,6 +4,8 @@ Generate clean, shareable HTML AI disclosure cards aligned with the [MindForge A
 
 AI Cards are structured disclosure documents that AI vendors provide to financial institutions (FIs) to support risk assessment and governance. This tool turns a JSON description of your AI system into a formatted, printable HTML card based on Appendix E of the MindForge Operationalisation Handbook.
 
+For AI agents, an optional **Agentic Runtime Safeguards** section documents how the agent is governed at the point of action, following MAS' [Safeguards for Agentic Finance at Runtime (SAFR)](https://www.mas.gov.sg/publications/monographs-or-information-paper/2026/safeguards-for-agentic-finance-at-runtime) white paper (v1.0, July 2026).
+
 ## Install
 
 ```bash
@@ -31,7 +33,7 @@ Auto-generated filename format: `<ai-name>-<timestamp>-ai-card.html`
 
 ## Input format
 
-See [`examples/sample-credit-scorer.json`](examples/sample-credit-scorer.json) for a complete example.
+See [`examples/sample-credit-scorer.json`](examples/sample-credit-scorer.json) for a complete example, and [`examples/sample-payments-agent.json`](examples/sample-payments-agent.json) for an agent with the SAFR section filled in.
 
 ```jsonc
 {
@@ -110,9 +112,50 @@ See [`examples/sample-credit-scorer.json`](examples/sample-credit-scorer.json) f
       }
     ],
     "dataFlowDescription": "..."
+  },
+  "agentic": {                      // optional, for AI agents (SAFR)
+    "integration": "Native",        // Native | Gateway
+    "identity": {
+      "registry": "...",
+      "agentId": "agent://...",
+      "verification": "..."
+    },
+    "mandate": {
+      "principal": "...",           // who delegated the authority, and who can revoke it
+      "permittedActions": ["Read invoice", "Propose payment"],
+      "exposureLimits": "...",
+      "rateLimits": "...",
+      "validity": "...",
+      "revocation": "..."
+    },
+    "controls": [
+      { "category": "Exposure Limits", "source": "Product rules", "rule": "..." }
+    ],
+    "actions": [
+      {
+        "action": "Propose payment above SGD 20,000",
+        "outcome": "Escalate",      // Auto-Execute | Observe | Escalate | Deny
+        "irreversible": true,       // risk factors, all optional booleans:
+        "financiallyMaterial": true,//   irreversible, financiallyMaterial, customerImpact,
+        "customerImpact": true,     //   regulatorySensitive, novel
+        "rationale": "..."
+      }
+    ],
+    "escalation": {
+      "reviewer": "...",
+      "reviewerAuthority": "...",
+      "timeout": "2 business hours",
+      "timeoutDefault": "block",    // what happens if nobody decides in time
+      "volume": "...",              // expected escalations vs reviewer capacity
+      "coverage": "..."
+    },
+    "envelope": "...",              // what each governance envelope carries
+    "auditLog": "..."               // where decisions are recorded, and how
   }
 }
 ```
+
+If `aiType` is `"Agentic"` and there is no `agentic` block, the CLI prints a warning.
 
 ## Risk dimensions
 
@@ -144,6 +187,21 @@ The nine sections of the output card correspond directly to the nine sections of
 | Pre-Determined Changes | Section 8 |
 | Standards and Certifications | Section 9 |
 | Components and Architecture | Optional Addendum |
+
+## SAFR alignment (agentic AI)
+
+The optional `agentic` block maps to the SAFR reference model (MAS, white paper v1.0, July 2026):
+
+| Card sub-section | SAFR concept |
+|---|---|
+| Agent Identity | Agent Identity component, integration pattern (Native or Gateway) |
+| Mandate | Mandate and control parameters: permitted action types, principal authority, validity period |
+| Controls Repository | Controls Repository and its control categories (Authorisation, Exposure Limits, Rate Limits, Evidence Quality) |
+| Action Dispositions | Disposition Engine outcomes (Auto-Execute, Observe, Escalate, Deny) and the calibration factors |
+| Human Reviewer Escalation | Escalation volume, review turnaround with a timeout default, reviewer authority |
+| Governance Envelope and Audit Log | Governance Envelope contents and the tamper-evident Audit Log |
+
+SAFR is an industry reference model, not a regulatory requirement. The card records how an institution has applied it.
 
 ## License
 

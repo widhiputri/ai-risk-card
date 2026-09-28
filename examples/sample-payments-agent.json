@@ -1,0 +1,130 @@
+{
+  "general": {
+    "name": "Supplier Payments Agent",
+    "version": "1.0.2",
+    "lastUpdated": "2026-09-15",
+    "provider": "LedgerFlow AI Pte. Ltd.",
+    "contact": "ai-governance@ledgerflow.example.com",
+    "license": "Proprietary - licensed under Master Services Agreement"
+  },
+  "aiType": "Agentic",
+  "modalities": ["Text", "Structured data"],
+  "purpose": {
+    "intendedUse": "An AI agent used by the FI's corporate banking operations team to prepare and initiate outbound supplier payments on behalf of corporate clients who have delegated this task. The agent reads approved invoices from the client's accounts payable feed, matches them against purchase orders, checks the payee against the client's approved supplier list, and proposes a payment instruction.\n\nNot intended for: payments to new or unapproved payees, cross-border payments to sanctioned or high-risk jurisdictions, payroll, or any payment the client has not delegated in its mandate.",
+    "usageGuidance": "The agent may only act within a signed client mandate. Every proposed payment is evaluated by the FI's runtime governance layer before execution. Operations staff must review every escalated payment within the review window. The agent must never be granted standing authority to change payee bank details."
+  },
+  "techniques": {
+    "description": "Tool-using large language model agent. The model plans each task, calls FI-provided tools (invoice retrieval, purchase order lookup, supplier registry lookup, payment proposal) and emits a governance envelope for every proposed action. The model has no direct access to payment rails.",
+    "architecture": "1. Planning layer: third-party LLM orchestrates the task and calls tools.\n2. Tool layer: FI-owned APIs expose read access to invoices, purchase orders and the supplier registry, and a single write tool that submits a payment proposal.\n3. Governance layer: every write is packaged as a governance envelope and evaluated by the FI's SAFR validator before it can reach the payments engine.\n4. Execution layer: approved instructions are passed to the FI's existing payments engine and settle over the normal rails.",
+    "externalServices": "LedgerFlow managed LLM API for planning and tool selection. Invoice and payment data sent to the API is limited to the fields needed for matching; client account numbers are tokenised."
+  },
+  "risks": [
+    {
+      "risk": "Payment above delegated authority",
+      "dimension": "Accountability & Governance",
+      "mitigation": "Per-payment and daily aggregate exposure limits are enforced by the governance layer, not by the agent. Payments above the autonomous threshold are escalated to a human reviewer; payments above the mandate ceiling are denied.",
+      "guidance": "Exposure limits must be set to match the client's existing delegated authority matrix and reviewed whenever the mandate changes."
+    },
+    {
+      "risk": "Prompt injection via invoice content",
+      "dimension": "Cyber & Data Security",
+      "mitigation": "Invoice text is treated as untrusted data. The governance envelope is authenticated against the original invoice record, so an envelope whose payee or amount departs from the source invoice is denied regardless of what the agent reports.",
+      "guidance": "Any new invoice source must be onboarded through the envelope integrity check before the agent can read it."
+    },
+    {
+      "risk": "Runaway or repeated actions",
+      "dimension": "Robustness & Stability",
+      "mitigation": "Rate limits cap the number of payment proposals per client per hour. Each step of a multi-step task is evaluated independently, so an approval at one step carries no authority into the next.",
+      "guidance": "A rate-limit breach suspends the agent for that client until operations review the activity log."
+    }
+  ],
+  "datasets": [
+    {
+      "name": "Client accounts payable feed",
+      "type": "Structured, client-provided",
+      "sources": "Approved invoices and purchase orders exported daily from each client's ERP system over an authenticated SFTP channel.",
+      "preprocessing": "Schema validation, duplicate invoice detection and currency normalisation before the agent can read a record.",
+      "personalData": "Supplier contact names may appear. Client bank account numbers are tokenised before they reach the model.",
+      "representativeness": "Not used for training. Covers every invoice the client submits for payment."
+    }
+  ],
+  "evaluation": [
+    {
+      "metric": "Invoice-to-payment match accuracy",
+      "justification": "Measures whether the agent proposes the correct payee and amount for each approved invoice.",
+      "result": "99.6% (August 2026 evaluation)",
+      "methodology": "2,000 historical invoices replayed in a sandbox. Each proposal compared with the payment a human operator made for the same invoice."
+    },
+    {
+      "metric": "Escalation rate",
+      "justification": "Operational metric. Shows how much human review the agent generates, so escalation stays within reviewer capacity.",
+      "result": "6.8% of proposals (August 2026 pilot)",
+      "methodology": "Escalated proposals divided by total proposals across the pilot clients. Alert threshold: above 12% triggers a threshold review."
+    }
+  ],
+  "cybersecurity": {
+    "dataShared": "Tokenised invoice and purchase order fields, and the tool call results needed for the task. No authentication credentials or raw account numbers.",
+    "dataHandling": "LedgerFlow retains no prompts or completions after the request. Data residency: Singapore region only.",
+    "securityMetrics": "Red-team exercise (July 2026) covering prompt injection through invoice fields and tool output tampering. All tampered envelopes were denied by the integrity check.",
+    "attestations": "LedgerFlow holds SOC 2 Type II (last audit: June 2026)."
+  },
+  "changes": [
+    {
+      "change": "Exposure and rate limit recalibration",
+      "frequency": "Quarterly, or when a client mandate changes",
+      "expectedImpact": "May change the share of payments that auto-execute versus escalate. Every change is approved by Operational Risk before deployment."
+    }
+  ],
+  "standards": [
+    {
+      "standard": "MindForge AI Risk Management Framework",
+      "details": "AI Card prepared in accordance with Appendix E of the MindForge AI Risk Management Operationalisation Handbook (January 2026)."
+    },
+    {
+      "standard": "Safeguards for Agentic Finance at Runtime (SAFR)",
+      "details": "Runtime governance designed against the SAFR reference model, white paper v1.0 (July 2026).",
+      "link": "https://www.mas.gov.sg/publications/monographs-or-information-paper/2026/safeguards-for-agentic-finance-at-runtime"
+    }
+  ],
+  "agentic": {
+    "integration": "Native: the agent emits a governance envelope before every proposed action",
+    "identity": {
+      "registry": "FI internal agent registry (closed-loop, single institution)",
+      "agentId": "agent://fi-sg/corp-ops/supplier-payments/v1",
+      "verification": "Signed service credential checked against the registry entry before any control is evaluated. An envelope that fails the check is rejected and logged."
+    },
+    "mandate": {
+      "principal": "Corporate client, under the payment delegation schedule signed by its authorised signatories. Only the client's signatories can widen or revoke it.",
+      "permittedActions": ["Read invoice", "Read purchase order", "Look up supplier", "Propose supplier payment"],
+      "exposureLimits": "Up to SGD 20,000 per payment executes autonomously; SGD 20,000 to 250,000 escalates; above SGD 250,000 or above SGD 1,000,000 per day is denied.",
+      "rateLimits": "Maximum 60 payment proposals per client per hour",
+      "validity": "12 months from signature, renewed at the client's annual review",
+      "revocation": "Client signatories via the corporate banking portal; takes effect for the next proposed action"
+    },
+    "controls": [
+      { "category": "Authorisation", "source": "User mandate", "rule": "Agent may act only for clients with an active delegation schedule and only for the permitted action types listed there." },
+      { "category": "Exposure Limits", "source": "Product rules", "rule": "Per-payment and daily aggregate thresholds as set in the mandate, aligned with the client's delegated authority matrix." },
+      { "category": "Rate Limits", "source": "Organisational policy", "rule": "60 proposals per client per hour. A breach suspends the agent for that client pending review." },
+      { "category": "Evidence Quality", "source": "Organisational policy", "rule": "Invoice, purchase order and approved-supplier match must all be present. Agent-stated confidence below 0.90 escalates regardless of value." },
+      { "category": "Sanctions screening", "source": "Regulatory requirement", "rule": "Payee screened against sanctions lists at proposal time. Any potential match is denied and routed to Compliance." }
+    ],
+    "actions": [
+      { "action": "Read invoice or purchase order", "outcome": "Auto-Execute", "rationale": "Read-only and inside the mandate." },
+      { "action": "Propose payment to approved supplier, up to SGD 20,000", "outcome": "Auto-Execute", "financiallyMaterial": false, "rationale": "Within scope and below the autonomous threshold." },
+      { "action": "Payment to a supplier first paid within the last 30 days", "outcome": "Observe", "novel": true, "rationale": "Permitted, but new payee relationships are logged for weekly review." },
+      { "action": "Propose payment of SGD 20,000 to 250,000", "outcome": "Escalate", "irreversible": true, "financiallyMaterial": true, "customerImpact": true, "rationale": "Above the autonomous threshold; held for an operations reviewer." },
+      { "action": "Change payee bank details", "outcome": "Deny", "irreversible": true, "customerImpact": true, "regulatorySensitive": true, "rationale": "Outside the mandate. A common fraud vector; must be done by the client through its own channel." },
+      { "action": "Payment to a potential sanctions match", "outcome": "Deny", "irreversible": true, "regulatorySensitive": true, "rationale": "Hard regulatory constraint. Routed to Compliance with the reason recorded." }
+    ],
+    "escalation": {
+      "reviewer": "Corporate banking payments operations team (maker-checker)",
+      "reviewerAuthority": "Can approve, amend the amount downward, or decline. Decisions carry the same weight as an operator-initiated payment.",
+      "timeout": "2 business hours",
+      "timeoutDefault": "block and notify the client",
+      "volume": "About 40 escalations a day at pilot volume against a team capacity of about 150",
+      "coverage": "Singapore business hours, 08:00 to 20:00. Outside those hours escalations wait and the timeout pauses."
+    },
+    "envelope": "Each proposed action carries the action type and parameters (payee, amount, currency, value date), the action trace (tool calls made, invoice and purchase order retrieved, supplier registry result, checks performed) and context metadata (agent identity, mandate reference, account state, operative policy). The envelope is authenticated against the source invoice record, not taken on the agent's word.",
+    "auditLog": "Append-only, tamper-evident log in the FI's compliance data store. Each entry records the envelope as submitted, the mandate checked, the disposition, the rules applied, the basis for the outcome and the time taken at each stage. Retained for 7 years and available to transaction monitoring and AML systems."
+  }
+}
